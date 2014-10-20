@@ -62,7 +62,7 @@ class Socolissimo extends CarrierModule
 	{
 		$this->name = 'socolissimo';
 		$this->tab = 'shipping_logistics';
-		$this->version = '2.9.6';
+		$this->version = '2.9.7';
 		$this->author = 'Quadra Informatique';
 		$this->limited_countries = array('fr');
 		$this->module_key = 'faa857ecf7579947c8eee2d9b3d1fb04';
@@ -1290,7 +1290,7 @@ class Socolissimo extends CarrierModule
 			$id_zone = Address::getZoneById((int)$address->id);
 			$products = $this->context->cart->getProducts();
 			$additional_shipping_cost = 0;
-			
+
 			//Additional shipping cost on product
 			foreach ($products as $product)
 				if (version_compare(_PS_VERSION_, '1.5', '<') || (!$product['is_virtual']))

@@ -22,7 +22,6 @@
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
-
 <script type="text/javascript">
 	var soInputs = new Object();
 	var soBwdCompat = "{$SOBWD_C|escape:'htmlall'}";
@@ -38,12 +37,12 @@
 	{literal}
 
 	$(document).ready(function() {
-		 $('.delivery_option').each(function( ) {
-				if ($(this).children('.delivery_option_radio').val() == '{/literal}{$id_carrier_seller}{literal},') {
-					$(this).remove();
-							}
-		   });
-		$('#id_carrier{/literal}{$id_carrier_seller}{literal}').parent().parent().remove();
+         $('.delivery_option').each(function( ) {
+                if ($(this).children('.delivery_option_radio').val() == '{/literal}{$id_carrier_seller}{literal},') {
+                    $(this).remove();
+                            }
+           });
+        $('#id_carrier{/literal}{$id_carrier_seller}{literal}').parent().parent().remove();
 		if(!soBwdCompat){
 			$($('#carrierTable input#id_carrier'+soCarrierId).parent().parent()).find('.carrier_price .price').html(initialCost_label+'<br/>'+initialCost);
 			$($('#carrierTable input#id_carrier'+soCarrierId).parent().parent()).find('.carrier_price').css('white-space','nowrap');
@@ -67,13 +66,13 @@
 					$('#form').attr("action", baseDir+'modules/socolissimo/redirect.php' + serialiseInput(soInputs));
 			}
 		});
-	});
+    });
 
 	function serialiseInput(inputs) {
 		var str = '?first_call=1&';
 		for ( var cle in inputs ) {
 			str += cle + '=' + inputs[cle] + '&';
-				}
+                }
 		return (str + 'gift=' + $('#gift').attr('checked') + '&gift_message='+ $('#gift_message').attr('value'));
 	}
 	{/literal}

@@ -23,7 +23,6 @@
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
-
 global $_MODULE;
 $_MODULE = array();
 $_MODULE['<{socolissimo}prestashop>ajax_607e1d854783c8229998ac2b5b6923d3'] = 'Token ungültig';

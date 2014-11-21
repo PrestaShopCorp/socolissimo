@@ -1,34 +1,35 @@
 <?php
 /**
-* 2007-2014 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Academic Free License (AFL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-* It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
-* DISCLAIMER
-*
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
-*
-*  @author    PrestaShop SA <contact@prestashop.com> Quadra Informatique <modules@quadra-informatique.fr>
-*  @copyright 2007-2014 PrestaShop SA
-*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
-*/
+ * 2007-2014 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ *  @author    PrestaShop SA <contact@prestashop.com> Quadra Informatique <modules@quadra-informatique.fr>
+ *  @copyright 2007-2014 PrestaShop SA
+ *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  International Registered Trademark & Property of PrestaShop SA
+ */
 
 if (!defined('_PS_VERSION_'))
 	exit;
 
 class Socolissimo extends CarrierModule
 {
+
 	private $_html = '';
 	private $post_errors = array();
 	private $api_num_version = '4.0';
@@ -62,7 +63,7 @@ class Socolissimo extends CarrierModule
 	{
 		$this->name = 'socolissimo';
 		$this->tab = 'shipping_logistics';
-		$this->version = '2.9.8';
+		$this->version = '2.9.11';
 		$this->author = 'Quadra Informatique';
 		$this->limited_countries = array('fr');
 		$this->module_key = 'faa857ecf7579947c8eee2d9b3d1fb04';
@@ -168,8 +169,8 @@ class Socolissimo extends CarrierModule
 				  `cedeliveryinformation` text NOT NULL,
 				  `cedoorcode1` varchar(10) NOT NULL,
 				  `cedoorcode2` varchar(10) NOT NULL,
-							   `codereseau` varchar(3) NOT NULL,
-							   `cename` varchar(64) NOT NULL,
+                               `codereseau` varchar(3) NOT NULL,
+                               `cename` varchar(64) NOT NULL,
 				  `cefirstname` varchar(64) NOT NULL,
 				  PRIMARY KEY  (`id_cart`,`id_customer`)
 				) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;';
@@ -652,7 +653,6 @@ class Socolissimo extends CarrierModule
 				}
 			}
 		}
-
 		if ($free_shipping)
 		{
 			$std_cost_with_taxes = 0;
@@ -796,8 +796,8 @@ class Socolissimo extends CarrierModule
 
 		// in 2.8.0 country is mandatory
 		$sql = Db::getInstance()->getRow('SELECT * FROM '._DB_PREFIX_.'country c
-			LEFT JOIN '._DB_PREFIX_.'country_lang cl ON cl.id_lang = '.(int)$params['cookie']->id_lang.'
-			AND cl.id_country = c.id_country WHERE iso_code = "'.pSQL($delivery_infos['cecountry']).'"');
+										  LEFT JOIN '._DB_PREFIX_.'country_lang cl ON cl.id_lang = '.(int)$params['cookie']->id_lang.'
+										  AND cl.id_country = c.id_country WHERE iso_code = "'.pSQL($delivery_infos['cecountry']).'"');
 		$name_country = $sql['name'];
 
 		if (((int)$order->id_carrier == (int)$so_carrier->id ||
@@ -944,7 +944,7 @@ class Socolissimo extends CarrierModule
 
 			foreach ($groups as $group)
 				Db::getInstance()->execute(
-					'INSERT INTO '._DB_PREFIX_.'carrier_group VALUE (\''.(int)$carrier->id.'\',\''.(int)$group['id_group'].'\')');
+						'INSERT INTO '._DB_PREFIX_.'carrier_group VALUE (\''.(int)$carrier->id.'\',\''.(int)$group['id_group'].'\')');
 
 			$range_price = new RangePrice();
 			$range_price->id_carrier = $carrier->id;
@@ -1040,19 +1040,19 @@ class Socolissimo extends CarrierModule
 		$ps_address = new Address((int)$id_address);
 		$new_address = new Address();
 		$sql = Db::getInstance()->getRow('SELECT c.id_country, cl.name FROM '._DB_PREFIX_.'country c
-			LEFT JOIN '._DB_PREFIX_.'country_lang cl ON cl.id_lang = '.(int)$this->context->language->id.'
-			AND cl.id_country = c.id_country WHERE iso_code = "'.pSQL($return['cecountry']).'"');
+										  LEFT JOIN '._DB_PREFIX_.'country_lang cl ON cl.id_lang = '.(int)$this->context->language->id.'
+										  AND cl.id_country = c.id_country WHERE iso_code = "'.pSQL($return['cecountry']).'"');
 
 		$iso_code = $sql['id_country'];
 
 		if ($this->upper($ps_address->lastname) != $this->upper($return['prname']) ||
-			$ps_address->id_country != $iso_code ||
-			$this->upper($ps_address->firstname) != $this->upper($return['prfirstname']) ||
-			$this->upper($ps_address->address1) != $this->upper($return['pradress3']) ||
-			$this->upper($ps_address->address2) != $this->upper($return['pradress2']) ||
-			$this->upper($ps_address->postcode) != $this->upper($return['przipcode']) ||
-			$this->upper($ps_address->city) != $this->upper($return['prtown']) ||
-			str_replace(array(' ', '.', '-', ',', ';', '+', '/', '\\', '+', '(', ')'), '', $ps_address->phone_mobile) != $return['cephonenumber'])
+				$ps_address->id_country != $iso_code ||
+				$this->upper($ps_address->firstname) != $this->upper($return['prfirstname']) ||
+				$this->upper($ps_address->address1) != $this->upper($return['pradress3']) ||
+				$this->upper($ps_address->address2) != $this->upper($return['pradress2']) ||
+				$this->upper($ps_address->postcode) != $this->upper($return['przipcode']) ||
+				$this->upper($ps_address->city) != $this->upper($return['prtown']) ||
+				str_replace(array(' ', '.', '-', ',', ';', '+', '/', '\\', '+', '(', ')'), '', $ps_address->phone_mobile) != $return['cephonenumber'])
 		{
 			$new_address->id_customer = (int)$id_customer;
 			$new_address->lastname = preg_replace('/\d/', '', Tools::substr($return['prname'], 0, 32));
@@ -1099,14 +1099,33 @@ class Socolissimo extends CarrierModule
 
 	public function checkRange($id_carrier)
 	{
-		switch (Configuration::get('PS_SHIPPING_METHOD'))
+		$sql ='';
+		if (version_compare(_PS_VERSION_, '1.5', '>'))
 		{
-			case '0' :
-				$sql = 'SELECT * FROM '._DB_PREFIX_.'range_price WHERE id_carrier = '.(int)$id_carrier;
-				break;
-			case '1' :
-				$sql = 'SELECT * FROM '._DB_PREFIX_.'range_weight WHERE id_carrier = '.(int)$id_carrier;
-				break;
+			$carrier = new Carrier($id_carrier);
+			if ($carrier->shipping_method){
+				switch ($carrier->shipping_method)
+				{
+				case '2' :
+					$sql = 'SELECT * FROM '._DB_PREFIX_.'range_price WHERE id_carrier = '.(int)$id_carrier;
+					break;
+				case '1' :
+					$sql = 'SELECT * FROM '._DB_PREFIX_.'range_weight WHERE id_carrier = '.(int)$id_carrier;
+					break;
+				}
+			}
+		}
+		if(!$sql)
+		{
+			switch (Configuration::get('PS_SHIPPING_METHOD'))
+			{
+				case '0' :
+					$sql = 'SELECT * FROM '._DB_PREFIX_.'range_price WHERE id_carrier = '.(int)$id_carrier;
+					break;
+				case '1' :
+					$sql = 'SELECT * FROM '._DB_PREFIX_.'range_weight WHERE id_carrier = '.(int)$id_carrier;
+					break;
+			}
 		}
 		return (bool)Db::getInstance()->getRow($sql);
 	}
@@ -1268,10 +1287,13 @@ class Socolissimo extends CarrierModule
 					$additional_shipping_cost = 0;
 					//Additional shipping cost on product
 					foreach ($products as $product)
-						if (version_compare(_PS_VERSION_, '1.5', '<') || (!$product['is_virtual']))
+					{
+						if (version_compare(_PS_VERSION_, '1.5', '<'))
 							$additional_shipping_cost += (float)$product['additional_shipping_cost'] * $product['quantity'];
-
-					if($carrier->shipping_handling)
+						elseif (!$product['is_virtual'])
+							$additional_shipping_cost += (float)$product['additional_shipping_cost'] * $product['quantity'];
+					}
+					if ($carrier->shipping_handling)
 						return $this->getCostByShippingMethod($carrier, $id_zone) + (float)$additional_shipping_cost + (float)Configuration::get('PS_SHIPPING_HANDLING');
 					else
 						return $this->getCostByShippingMethod($carrier, $id_zone) + (float)$additional_shipping_cost;
@@ -1291,13 +1313,15 @@ class Socolissimo extends CarrierModule
 			$id_zone = Address::getZoneById((int)$address->id);
 			$products = $this->context->cart->getProducts();
 			$additional_shipping_cost = 0;
-
 			//Additional shipping cost on product
 			foreach ($products as $product)
-				if (version_compare(_PS_VERSION_, '1.5', '<') || (!$product['is_virtual']))
+			{
+				if (version_compare(_PS_VERSION_, '1.5', '<'))
 					$additional_shipping_cost += (float)$product['additional_shipping_cost'] * $product['quantity'];
-
-			if($carrier->shipping_handling)
+				elseif (!$product['is_virtual'])
+					$additional_shipping_cost += (float)$product['additional_shipping_cost'] * $product['quantity'];
+			}
+			if ($carrier->shipping_handling)
 				return $this->getCostByShippingMethod($carrier, $id_zone) + (float)$additional_shipping_cost + (float)Configuration::get('PS_SHIPPING_HANDLING');
 			else
 				return $this->getCostByShippingMethod($carrier, $id_zone) + (float)$additional_shipping_cost;
@@ -1330,10 +1354,10 @@ class Socolissimo extends CarrierModule
 					return $carrier->getDeliveryPriceByWeight($this->context->cart->getTotalWeight(), $id_zone);
 			if (!Configuration::get('PS_SHIPPING_METHOD'))
 				if ($carrier->getDeliveryPriceByPrice(
-					$this->context->cart->getOrderTotal(true, Cart::BOTH_WITHOUT_SHIPPING), $id_zone, $this->context->cart->id_currency))
+								$this->context->cart->getOrderTotal(true, Cart::BOTH_WITHOUT_SHIPPING), $id_zone, $this->context->cart->id_currency))
 					return $carrier->getDeliveryPriceByPrice(
-						$this->context->cart->getOrderTotal(
-								true, Cart::BOTH_WITHOUT_SHIPPING), $id_zone, $this->context->cart->id_currency);
+									$this->context->cart->getOrderTotal(
+											true, Cart::BOTH_WITHOUT_SHIPPING), $id_zone, $this->context->cart->id_currency);
 		}
 		return false;
 	}
@@ -1349,10 +1373,14 @@ class Socolissimo extends CarrierModule
 			$additional_shipping_cost = 0;
 			//Additional shipping cost on product
 			foreach ($products as $product)
-				if (version_compare(_PS_VERSION_, '1.5', '<') || (!$product['is_virtual']))
+			{
+				if (version_compare(_PS_VERSION_, '1.5', '<'))
 					$additional_shipping_cost += (float)$product['additional_shipping_cost'] * $product['quantity'];
+				elseif (!$product['is_virtual'])
+					$additional_shipping_cost += (float)$product['additional_shipping_cost'] * $product['quantity'];
+			}
 
-			if($carrier->shipping_handling)
+			if ($carrier->shipping_handling)
 				return $this->getCostByShippingMethod($carrier, $id_zone) + (float)$additional_shipping_cost + (float)Configuration::get('PS_SHIPPING_HANDLING');
 			else
 				return $this->getCostByShippingMethod($carrier, $id_zone) + (float)$additional_shipping_cost;
@@ -1451,9 +1479,7 @@ class Socolissimo extends CarrierModule
 	public function setInputParams($inputs)
 	{
 		if (version_compare(_PS_VERSION_, '1.5', '<'))
-		{
 			$get_mobile_device = (_THEME_NAME_ == 'prestashop_mobile') ? true : false;
-		}
 		else
 			$get_mobile_device = Context::getContext()->getMobileDevice();
 
@@ -1502,7 +1528,7 @@ class Socolissimo extends CarrierModule
 				$file = dirname(__FILE__).'/upgrade/install-'.$version.'.php';
 				if (Configuration::get('SOCOLISSIMO_VERSION') < $version && file_exists($file))
 				{
-					include_once($file);
+					include_once $file;
 					call_user_func('upgrade_module_'.str_replace('.', '_', $version), $this, $install);
 				}
 			}
@@ -1520,15 +1546,15 @@ class Socolissimo extends CarrierModule
 		if (version_compare(_PS_VERSION_, '1.5', '<'))
 		{
 			return Db::getInstance()->ExecuteS('SELECT c.name, c.id_carrier
-				FROM '._DB_PREFIX_.'carrier c
-				WHERE c.deleted = 0 AND c.id_carrier <> '.(int)$id_socolissimo);
+            FROM '._DB_PREFIX_.'carrier c
+            WHERE c.deleted = 0 AND c.id_carrier <> '.(int)$id_socolissimo);
 		}
 		else
 		{
 			return Db::getInstance()->ExecuteS('SELECT c.name, c.id_carrier
-			FROM '._DB_PREFIX_.'carrier c
-			LEFT JOIN '._DB_PREFIX_.'carrier_shop sh ON sh.id_shop = '.(int)$id_shop.' AND sh.id_carrier = c.id_carrier
-			WHERE c.deleted = 0 AND c.id_carrier <> '.(int)$id_socolissimo);
+            FROM '._DB_PREFIX_.'carrier c
+            LEFT JOIN '._DB_PREFIX_.'carrier_shop sh ON sh.id_shop = '.(int)$id_shop.' AND sh.id_carrier = c.id_carrier
+            WHERE c.deleted = 0 AND c.id_carrier <> '.(int)$id_socolissimo);
 		}
 	}
 
@@ -1536,18 +1562,18 @@ class Socolissimo extends CarrierModule
 	{
 		// carrier must be module carrier
 		Db::getInstance()->execute('UPDATE '._DB_PREFIX_.'carrier SET
-			shipping_handling = 0,
-			is_module = 1,
-			shipping_external = 1,
-			need_range = 1,
-			external_module_name = "socolissimo"
-			WHERE  id_carrier = '.(int)$id_socolissimo);
+            shipping_handling = 0,
+            is_module = 1,
+            shipping_external = 1,
+            need_range = 1,
+            external_module_name = "socolissimo"
+            WHERE  id_carrier = '.(int)$id_socolissimo);
 
 		// old carrier no longer linked with socolissimo
 		Db::getInstance()->execute('UPDATE '._DB_PREFIX_.'carrier SET
-			is_module = 0,
-			external_module_name = ""
-			WHERE  id_carrier NOT IN ( '.(int)Configuration::get('SOCOLISSIMO_CARRIER_ID_SELLER').','.(int)Configuration::get('SOCOLISSIMO_CARRIER_ID').')');
+            is_module = 0,
+            external_module_name = ""
+            WHERE  id_carrier NOT IN ( '.(int)Configuration::get('SOCOLISSIMO_CARRIER_ID_SELLER').','.(int)Configuration::get('SOCOLISSIMO_CARRIER_ID').')');
 	}
 
 }

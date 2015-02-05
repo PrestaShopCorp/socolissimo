@@ -63,7 +63,7 @@ class Socolissimo extends CarrierModule
 	{
 		$this->name = 'socolissimo';
 		$this->tab = 'shipping_logistics';
-		$this->version = '2.9.15';
+		$this->version = '2.9.16';
 		$this->author = 'Quadra Informatique';
 		$this->limited_countries = array('fr');
 		$this->module_key = 'faa857ecf7579947c8eee2d9b3d1fb04';
@@ -74,6 +74,8 @@ class Socolissimo extends CarrierModule
 		$this->displayName = $this->l('So Colissimo');
 		$this->description = $this->l('Offer your customer 5 different delivery methods with LaPoste.');
 		$protocol = function_exists('Tools::getProtocol') ? Tools::getProtocol() : 'http://';
+		if (Configuration::get('PS_SSL_ENABLED') && Configuration::get('PS_SSL_ENABLED_EVERYWHERE'))
+			$protocol = 'https://';
 		$this->url = $protocol.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/'.$this->name.'/validation.php';
 
 		/** Backward compatibility */
@@ -715,6 +717,7 @@ class Socolissimo extends CarrierModule
 			'inputs' => $inputs,
 			'initialCost_label' => $this->l('From'),
 			'initialCost' => $from_cost.' €', // to change label for price in tpl
+			'taxMention' => $this->l(' TTC'), // to change label for price in tpl
 			'finishProcess' => $this->l('To choose SoColissimo, click on a delivery method')
 		));
 
@@ -803,7 +806,7 @@ class Socolissimo extends CarrierModule
 		if (((int)$order->id_carrier == (int)$so_carrier->id
 				|| in_array((int)$order->id_carrier, explode('|', Configuration::get('SOCOLISSIMO_CARRIER_ID_HIST')))) && !empty($delivery_infos))
 		{
-			$html = '<br><br><fieldset style="width:400px;"><legend><img src="'.$this->_path.'logo.gif" alt="" /> ';
+			$html = '<br><div class="panel"><fieldset style="width:400px;"><legend><img src="'.$this->_path.'logo.gif" alt="" /> ';
 			$html .= $this->l('So Colissimo').'</legend><b>'.$this->l('Delivery mode').' : </b>';
 
 			$sc_fields = new SCFields($delivery_infos['delivery_mode']);
@@ -856,7 +859,7 @@ class Socolissimo extends CarrierModule
 
 					break;
 			}
-			$html .= '</fieldset>';
+			$html .= '</fieldset></div>';
 			return $html;
 		}
 	}

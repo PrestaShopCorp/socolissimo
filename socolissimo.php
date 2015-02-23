@@ -54,6 +54,7 @@ class Socolissimo extends CarrierModule
 	public $personal_data_phone_error = false;
 	public $personal_data_zip_code_error = false;
 	public $siret_error = false;
+	public $info_partner_error = false;
 	public $url = '';
 	public $errors = array();
 	public $initial_cost = 0;
@@ -63,7 +64,7 @@ class Socolissimo extends CarrierModule
 	{
 		$this->name = 'socolissimo';
 		$this->tab = 'shipping_logistics';
-		$this->version = '2.9.15';
+		$this->version = '2.9.17';
 		$this->author = 'Quadra Informatique';
 		$this->limited_countries = array('fr');
 		$this->module_key = 'faa857ecf7579947c8eee2d9b3d1fb04';
@@ -74,6 +75,8 @@ class Socolissimo extends CarrierModule
 		$this->displayName = $this->l('So Colissimo');
 		$this->description = $this->l('Offer your customer 5 different delivery methods with LaPoste.');
 		$protocol = function_exists('Tools::getProtocol') ? Tools::getProtocol() : 'http://';
+		if (Configuration::get('PS_SSL_ENABLED') && Configuration::get('PS_SSL_ENABLED_EVERYWHERE'))
+			$protocol = 'https://';
 		$this->url = $protocol.Tools::getShopDomainSsl().__PS_BASE_URI__.'modules/'.$this->name.'/validation.php';
 
 		/** Backward compatibility */
@@ -383,7 +386,8 @@ class Socolissimo extends CarrierModule
 			'shop_phone' => $shop_phone,
 			'personal_data_phone_error' => $this->personal_data_phone_error,
 			'personal_data_zip_code_error' => $this->personal_data_zip_code_error,
-			'siret_error' => $this->siret_error
+			'siret_error' => $this->siret_error,
+			'info_partner_error' => $this->info_partner_error
 		));
 		return $this->_html .= $this->fetchTemplate('personnal_data.tpl');
 	}
@@ -481,9 +485,11 @@ class Socolissimo extends CarrierModule
 			$zip_code = Tools::getValue('SOCOLISSIMO_PERSONAL_ZIP_CODE');
 			$quantities = Tools::getValue('SOCOLISSIMO_PERSONAL_QUANTITIES');
 			$siret = Tools::getValue('SOCOLISSIMO_PERSONAL_SIRET');
+			$info_partner = Tools::getValue('SOCOLISSIMO_INFO_PARTNER');
 			$this->personal_data_phone_error = false;
 			$this->personal_data_zip_code_error = false;
 			$this->siret_error = false;
+			$this->info_partner_error = false;
 
 			if (!(bool)preg_match('#^(([\d]{2})([\s]){0,1}){5}$#', $phone))
 			{
@@ -498,6 +504,11 @@ class Socolissimo extends CarrierModule
 			if (!$this->isSiret($siret))
 			{
 				$this->siret_error = true;
+				return false;
+			}
+			if($info_partner == false)
+			{
+				$this->info_partner_error = true;
 				return false;
 			}
 
@@ -715,6 +726,7 @@ class Socolissimo extends CarrierModule
 			'inputs' => $inputs,
 			'initialCost_label' => $this->l('From'),
 			'initialCost' => $from_cost.' €', // to change label for price in tpl
+			'taxMention' => $this->l(' TTC'), // to change label for price in tpl
 			'finishProcess' => $this->l('To choose SoColissimo, click on a delivery method')
 		));
 
@@ -803,7 +815,7 @@ class Socolissimo extends CarrierModule
 		if (((int)$order->id_carrier == (int)$so_carrier->id
 				|| in_array((int)$order->id_carrier, explode('|', Configuration::get('SOCOLISSIMO_CARRIER_ID_HIST')))) && !empty($delivery_infos))
 		{
-			$html = '<br><br><fieldset style="width:400px;"><legend><img src="'.$this->_path.'logo.gif" alt="" /> ';
+			$html = '<br><div class="panel"><fieldset style="width:400px;"><legend><img src="'.$this->_path.'logo.gif" alt="" /> ';
 			$html .= $this->l('So Colissimo').'</legend><b>'.$this->l('Delivery mode').' : </b>';
 
 			$sc_fields = new SCFields($delivery_infos['delivery_mode']);
@@ -856,7 +868,7 @@ class Socolissimo extends CarrierModule
 
 					break;
 			}
-			$html .= '</fieldset>';
+			$html .= '</fieldset></div>';
 			return $html;
 		}
 	}

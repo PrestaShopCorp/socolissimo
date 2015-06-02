@@ -162,7 +162,8 @@ function saveOrderShippingDetails($id_cart, $id_customer, $so_params, $so_object
 		$sql = 'INSERT INTO '._DB_PREFIX_.'socolissimo_delivery_info
 			( `id_cart`, `id_customer`, `delivery_mode`, `prid`, `prname`, `prfirstname`, `prcompladress`,
 			`pradress1`, `pradress2`, `pradress3`, `pradress4`, `przipcode`, `prtown`,`cecountry`, `cephonenumber`, `ceemail` ,
-			`cecompanyname`, `cedeliveryinformation`, `cedoorcode1`, `cedoorcode2`,`codereseau`, `cename`, `cefirstname`)
+			`cecompanyname`, `cedeliveryinformation`, `cedoorcode1`, `cedoorcode2`,`codereseau`, `cename`, `cefirstname`,`lotacheminement`,`distributionsort`,
+			`versionplantri`)
 			VALUES ('.(int)$id_cart.','.(int)$id_customer.',';
 		if ($so_object->delivery_mode == SCFields::RELAY_POINT)
 			$sql .= '\''.pSQL($so_params['DELIVERYMODE']).'\',
@@ -183,9 +184,12 @@ function saveOrderShippingDetails($id_cart, $id_customer, $so_params, $so_object
 					'.(isset($so_params['CEDELIVERYINFORMATION']) ? '\''.pSQL($so_params['CEDELIVERYINFORMATION']).'\'' : '\'\'').',
 					'.(isset($so_params['CEDOORCODE1']) ? '\''.pSQL($so_params['CEDOORCODE1']).'\'' : '\'\'').',
 					'.(isset($so_params['CEDOORCODE2']) ? '\''.pSQL($so_params['CEDOORCODE2']).'\'' : '\'\'').',
-                                    '.(isset($so_params['CODERESEAU']) ? '\''.pSQL($so_params['CODERESEAU']).'\'' : '\'\'').',
-                                    '.(isset($so_params['CENAME']) ? '\''.Tools::ucfirst(pSQL($so_params['CENAME'])).'\'' : '\'\'').',
-                                    '.(isset($so_params['CEFIRSTNAME']) ? '\''.Tools::ucfirst(pSQL($so_params['CEFIRSTNAME'])).'\'' : '\'\'').')';
+                    '.(isset($so_params['CODERESEAU']) ? '\''.pSQL($so_params['CODERESEAU']).'\'' : '\'\'').',
+                    '.(isset($so_params['CENAME']) ? '\''.Tools::ucfirst(pSQL($so_params['CENAME'])).'\'' : '\'\'').',
+                    '.(isset($so_params['CEFIRSTNAME']) ? '\''.Tools::ucfirst(pSQL($so_params['CEFIRSTNAME'])).'\'' : '\'\'').',
+					'.(isset($so_params['LOTACHEMINEMENT']) ? '\''.pSQL($so_params['LOTACHEMINEMENT']).'\'' : '\'\'').',
+					'.(isset($so_params['DISTRIBUTIONSORT']) ? '\''.pSQL($so_params['DISTRIBUTIONSORT']).'\'' : '\'\'').',
+					'.(isset($so_params['VERSIONPLANTRI']) ? '\''.pSQL($so_params['VERSIONPLANTRI']).'\'' : '\'\'').')';
 		else
 			$sql .= '\''.pSQL($so_params['DELIVERYMODE']).'\',\'\',
 					'.(isset($so_params['CENAME']) ? '\''.Tools::ucfirst(pSQL($so_params['CENAME'])).'\'' : '\'\'').',
@@ -204,9 +208,12 @@ function saveOrderShippingDetails($id_cart, $id_customer, $so_params, $so_object
 					'.(isset($so_params['CEDELIVERYINFORMATION']) ? '\''.pSQL($so_params['CEDELIVERYINFORMATION']).'\'' : '\'\'').',
 					'.(isset($so_params['CEDOORCODE1']) ? '\''.pSQL($so_params['CEDOORCODE1']).'\'' : '\'\'').',
 					'.(isset($so_params['CEDOORCODE2']) ? '\''.pSQL($so_params['CEDOORCODE2']).'\'' : '\'\'').',
-                                    '.(isset($so_params['CODERESEAU']) ? '\''.pSQL($so_params['CODERESEAU']).'\'' : '\'\'').',
-                                    '.(isset($so_params['CENAME']) ? '\''.Tools::ucfirst(pSQL($so_params['CENAME'])).'\'' : '\'\'').',
-                                    '.(isset($so_params['CEFIRSTNAME']) ? '\''.Tools::ucfirst(pSQL($so_params['CEFIRSTNAME'])).'\'' : '\'\'').')';
+                    '.(isset($so_params['CODERESEAU']) ? '\''.pSQL($so_params['CODERESEAU']).'\'' : '\'\'').',
+                    '.(isset($so_params['CENAME']) ? '\''.Tools::ucfirst(pSQL($so_params['CENAME'])).'\'' : '\'\'').',
+                    '.(isset($so_params['CEFIRSTNAME']) ? '\''.Tools::ucfirst(pSQL($so_params['CEFIRSTNAME'])).'\'' : '\'\'').',
+					'.(isset($so_params['LOTACHEMINEMENT']) ? '\''.pSQL($so_params['LOTACHEMINEMENT']).'\'' : '\'\'').',
+					'.(isset($so_params['DISTRIBUTIONSORT']) ? '\''.pSQL($so_params['DISTRIBUTIONSORT']).'\'' : '\'\'').',
+					'.(isset($so_params['VERSIONPLANTRI']) ? '\''.pSQL($so_params['VERSIONPLANTRI']).'\'' : '\'\'').')';
 		if (Db::getInstance()->execute($sql))
 			return true;
 	}
@@ -216,6 +223,10 @@ function saveOrderShippingDetails($id_cart, $id_customer, $so_params, $so_object
 		$values = array();
 		$values['delivery_mode'] = pSQL($so_params['DELIVERYMODE']);
 		$values['cephonenumber'] = pSQL($phone_number);
+		// reseting optionnal field
+		$values['lotacheminement'] = '';
+		$values['distributionsort'] = '';
+		$values['versionplantri'] = '';
 
 		if ($so_object->delivery_mode == SCFields::RELAY_POINT)
 		{
@@ -238,6 +249,10 @@ function saveOrderShippingDetails($id_cart, $id_customer, $so_params, $so_object
 			isset($so_params['CODERESEAU']) ? $values['codereseau'] = pSQL($so_params['CODERESEAU']) : '';
 			isset($so_params['CENAME']) ? $values['cename'] = pSQL($so_params['CENAME']) : '';
 			isset($so_params['CEFIRSTNAME']) ? $values['cefirstname'] = pSQL($so_params['CEFIRSTNAME']) : '';
+			isset($so_params['LOTACHEMINEMENT']) ? $values['lotacheminement'] = pSQL($so_params['LOTACHEMINEMENT']) : '';
+			isset($so_params['DISTRIBUTIONSORT']) ? $values['distributionsort'] = pSQL($so_params['DISTRIBUTIONSORT']) : '';
+			isset($so_params['VERSIONPLANTRI']) ? $values['versionplantri'] = pSQL($so_params['VERSIONPLANTRI']) : '';
+			
 		}
 		else
 		{
@@ -260,6 +275,9 @@ function saveOrderShippingDetails($id_cart, $id_customer, $so_params, $so_object
 			isset($so_params['CODERESEAU']) ? $values['codereseau'] = pSQL($so_params['CODERESEAU']) : '';
 			isset($so_params['CENAME']) ? $values['cename'] = pSQL($so_params['CENAME']) : '';
 			isset($so_params['CEFIRSTNAME']) ? $values['cefirstname'] = pSQL($so_params['CEFIRSTNAME']) : '';
+			isset($so_params['LOTACHEMINEMENT']) ? $values['lotacheminement'] = pSQL($so_params['LOTACHEMINEMENT']) : '';
+			isset($so_params['DISTRIBUTIONSORT']) ? $values['distributionsort'] = pSQL($so_params['DISTRIBUTIONSORT']) : '';
+			isset($so_params['VERSIONPLANTRI']) ? $values['versionplantri'] = pSQL($so_params['VERSIONPLANTRI']) : '';
 		}
 		$where = ' `id_cart` =\''.(int)$id_cart.'\' AND `id_customer` =\''.(int)$id_customer.'\'';
 

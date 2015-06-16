@@ -64,7 +64,7 @@ class Socolissimo extends CarrierModule
 	{
 		$this->name = 'socolissimo';
 		$this->tab = 'shipping_logistics';
-		$this->version = '2.9.18';
+		$this->version = '2.9.20';
 		$this->author = 'Quadra Informatique';
 		$this->limited_countries = array('fr');
 		$this->module_key = 'faa857ecf7579947c8eee2d9b3d1fb04';
@@ -82,8 +82,9 @@ class Socolissimo extends CarrierModule
 		/** Backward compatibility */
 		require(_PS_MODULE_DIR_.$this->name.'/backward_compatibility/backward.php');
 
-		if ((Configuration::get('SOCOLISSIMO_VERSION') != $this->version) && Configuration::get('SOCOLISSIMO_VERSION'))
-			$this->runUpgrades(true);
+		if (version_compare(_PS_VERSION_, '1.5', '<'))
+			if ((Configuration::get('SOCOLISSIMO_VERSION') != $this->version) && Configuration::get('SOCOLISSIMO_VERSION'))
+				$this->runUpgrades(true);
 		if (self::isInstalled($this->name))
 		{
 			$warning = array();
@@ -173,6 +174,9 @@ class Socolissimo extends CarrierModule
                                `codereseau` varchar(3) NOT NULL,
                                `cename` varchar(64) NOT NULL,
 				  `cefirstname` varchar(64) NOT NULL,
+				  `lotacheminement` varchar(64) NOT NULL,
+				  `distributionsort` varchar(64) NOT NULL,
+				  `versionplantri` text(10) NOT NULL,
 				  PRIMARY KEY  (`id_cart`,`id_customer`)
 				) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;';
 
@@ -713,7 +717,10 @@ class Socolissimo extends CarrierModule
 		if ($seller_cost_with_taxes || (Configuration::get('SOCOLISSIMO_CARRIER_ID_SELLER') && Configuration::get('SOCOLISSIMO_COST_SELLER')))
 			if ((float)str_replace(',', '.', $seller_cost_with_taxes) < (float)str_replace(',', '.', $std_cost_with_taxes))
 				$from_cost = $seller_cost_with_taxes;
-
+		$rewrite_active = true;
+		if(!Configuration::get('PS_REWRITING_SETTINGS'))
+			$rewrite_active = false;
+			
 		$this->context->smarty->assign(array(
 			'select_label' => $this->l('Select delivery mode'),
 			'edit_label' => $this->l('Edit delivery mode'),
@@ -727,7 +734,8 @@ class Socolissimo extends CarrierModule
 			'initialCost_label' => $this->l('From'),
 			'initialCost' => $from_cost.' €', // to change label for price in tpl
 			'taxMention' => $this->l(' TTC'), // to change label for price in tpl
-			'finishProcess' => $this->l('To choose SoColissimo, click on a delivery method')
+			'finishProcess' => $this->l('To choose SoColissimo, click on a delivery method'),
+			'rewrite_active' => $rewrite_active
 		));
 
 		$ids = array();
@@ -1524,23 +1532,26 @@ class Socolissimo extends CarrierModule
 	 */
 	public function runUpgrades($install = false)
 	{
-		if (Configuration::get('SOCOLISSIMO_VERSION') != $this->version)
-			foreach (array('2.8.0', '2.8.4', '2.8.5') as $version)
-			{
-				$file = dirname(__FILE__).'/upgrade/install-'.$version.'.php';
-				if (Configuration::get('SOCOLISSIMO_VERSION') < $version && file_exists($file))
-				{
-					include_once $file;
-					call_user_func('upgrade_module_'.str_replace('.', '_', $version), $this, $install);
-				}
-			}
-		if (!Configuration::get('SOCOLISSIMO_CARRIER_ID_SELLER'))
+		if (version_compare(_PS_VERSION_, '1.5', '<'))
 		{
-			//add carrier for seller cost
-			$this->createSoColissimoCarrierSeller($this->config);
+			if (Configuration::get('SOCOLISSIMO_VERSION') != $this->version)
+				foreach (array('2.8.0', '2.8.4', '2.8.5','2.9.20') as $version)
+				{
+					$file = dirname(__FILE__).'/upgrade/install-'.$version.'.php';
+					if (Configuration::get('SOCOLISSIMO_VERSION') < $version && file_exists($file))
+					{
+						include_once $file;
+						call_user_func('upgrade_module_'.str_replace('.', '_', $version), $this, $install);
+					}
+				}
+			if (!Configuration::get('SOCOLISSIMO_CARRIER_ID_SELLER'))
+			{
+				//add carrier for seller cost
+				$this->createSoColissimoCarrierSeller($this->config);
+				Configuration::updateValue('SOCOLISSIMO_VERSION', $this->version);
+			}
 			Configuration::updateValue('SOCOLISSIMO_VERSION', $this->version);
 		}
-		Configuration::updateValue('SOCOLISSIMO_VERSION', $this->version);
 	}
 
 	public function getCarrierShop($id_shop, $id_socolissimo)

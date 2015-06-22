@@ -49,6 +49,7 @@
 {/if}
 
 <script type="text/javascript">
+	var link_socolissimo = "{$link_socolissimo|escape:'UTF-8'}";
 	var soInputs = new Object();
 	var soBwdCompat = "{$SOBWD_C|escape:'htmlall'}";
 	var soCarrierId = "{$id_carrier|escape:'htmlall'}";
@@ -80,7 +81,10 @@
 			'enableEscapeButton': true,
 			'type': 'iframe',
 			onStart: function () {
-				$('#soLink').attr('href', baseDir + 'modules/socolissimo/redirect.php' + serialiseInput(soInputs))
+				if (soBwdCompat)
+					$('#soLink').attr('href', link_socolissimo + serialiseInput(soInputs));
+				else
+					$('#soLink').attr('href', baseDir + 'modules/socolissimo/redirect.php' + serialiseInput(soInputs));
 			},
 			onClosed: function () {
 				$.ajax({
@@ -160,10 +164,7 @@
 					{
 						if (acceptCGV()) {
 							if (soBwdCompat)
-								if(rewriteActive)
-									$('#soFr').attr('src', baseDir + 'modules/socolissimo/redirect' + serialiseInput(soInputs));
-								else
-									$('#soFr').attr('src', baseDir + 'index.php' + serialiseInput(soInputs));
+								$('#soLink').attr('href', link_socolissimo + serialiseInput(soInputs));
 							else
 								$('#soLink').attr('href', baseDir + 'modules/socolissimo/redirect.php' + serialiseInput(soInputs));
 							$("#soLink").trigger("click");
@@ -209,10 +210,7 @@
 		function redirect()
 		{
 			if (soBwdCompat)
-				if(rewriteActive)
-					$('#soFr').attr('src', baseDir + 'modules/socolissimo/redirect' + serialiseInput(soInputs));
-				else
-					$('#soFr').attr('src', baseDir + 'index.php' + serialiseInput(soInputs));
+				$('#soLink').attr('href', link_socolissimo + serialiseInput(soInputs));
 			else
 				$('#soLink').attr('href', baseDir + 'modules/socolissimo/redirect.php' + serialiseInput(soInputs));
 			$("#soLink").trigger("click");
@@ -221,13 +219,14 @@
 
 		function serialiseInput(inputs)
 		{
-			var str = '?first_call=1&';
+			if (soBwdCompat && !rewriteActive)
+				var str = '&first_call=1&';
+			else
+				var str = '?first_call=1&';
+		
 			for (var cle in inputs)
 				str += cle + '=' + inputs[cle] + '&';
-			if (!soBwdCompat)
-				return (str + 'gift=' + $('#gift').attr('checked') + '&gift_message=' + $('#gift_message').attr('value'));
-			else
-				return (str + 'module=socolissimo&controller=redirect&fc=module&gift=' + $('#gift').attr('checked') + '&gift_message=' + $('#gift_message').attr('value'));
+			return (str + 'gift=' + $('#gift').attr('checked') + '&gift_message=' + $('#gift_message').attr('value'));
 		}
 
 	{/literal}

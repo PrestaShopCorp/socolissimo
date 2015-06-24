@@ -23,7 +23,7 @@
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 <script type="text/javascript">
-
+	var link_socolissimo = "{$link_socolissimo_mobile|escape:'UTF-8'}";
 	var soInputs = new Object();
 	var soBwdCompat = "{$SOBWD_C|escape:'htmlall'}";
 	var initialCost_label = "{$initialCost_label|escape:'htmlall'}"
@@ -43,8 +43,12 @@
 				$($('#carrierTable input#id_carrier' + soCarrierId).parent().parent()).find('.carrier_price .price').html(initialCost_label + '<br/>' + initialCost);
 			else {
 				$('input.delivery_option_radio').each(function () {
-					if ($(this).val() == soCarrierId + ',')
+					if ($(this).val() == soCarrierId + ',') {
 						$(this).next().children().children().find('div.delivery_option_price').html(initialCost_label + '<br/>' + initialCost + taxMention);
+						// 1.6 themes
+						if ($(this).next().children('div.delivery_option_price').length == 0)
+							$(this).parents('tr').children('td.delivery_option_price').find('div.delivery_option_price').html(initialCost_label + '<br/>' + initialCost + taxMention);
+					}
 				});
 			}
 			$("#form").submit(function () {
@@ -53,23 +57,20 @@
 						$('#form').attr("action", baseDir + 'modules/socolissimo/redirect_mobile.php' + serialiseInput(soInputs));
 				} else {
 					if ($("input[name*='delivery_option[']:checked").val().replace(",", "") == soCarrierId)
-						if(rewriteActive)
-							$('#form').attr('action', baseDir + 'modules/socolissimo/redirectmobile' + serialiseInput(soInputs));
-						else
-							$('#form').attr('action', baseDir + 'index.php' + serialiseInput(soInputs));
+						$('#form').attr('action', link_socolissimo + serialiseInput(soInputs));
 				}
 			});
 		});
 
 		function serialiseInput(inputs) {
-			var str = '?first_call=1&';
-			for (var cle in inputs) {
-				str += cle + '=' + inputs[cle] + '&';
-			}
-			if (!soBwdCompat)
-				return (str + 'gift=' + $('#gift').attr('checked') + '&gift_message=' + $('#gift_message').attr('value'));
+			if (soBwdCompat && !rewriteActive)
+				var str = '&first_call=1&';
 			else
-				return (str + 'module=socolissimo&controller=redirectmobile&fc=module&gift=' + $('#gift').attr('checked') + '&gift_message=' + $('#gift_message').attr('value'));
+				var str = '?first_call=1&';
+			for (var cle in inputs)
+				str += cle + '=' + inputs[cle] + '&';
+			return (str + 'gift=' + $('#gift').attr('checked') + '&gift_message=' + $('#gift_message').attr('value'));
+			
 		}
 	{/literal}
 </script>

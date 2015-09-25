@@ -64,7 +64,7 @@ class Socolissimo extends CarrierModule
 	{
 		$this->name = 'socolissimo';
 		$this->tab = 'shipping_logistics';
-		$this->version = '2.9.21';
+		$this->version = '2.9.22';
 		$this->author = 'Quadra Informatique';
 		$this->limited_countries = array('fr');
 		$this->module_key = 'faa857ecf7579947c8eee2d9b3d1fb04';
@@ -164,7 +164,7 @@ class Socolissimo extends CarrierModule
 				  `przipcode` text(10) NOT NULL,
 				  `prtown` varchar(64) NOT NULL,
 				  `cecountry` varchar(10) NOT NULL,
-				  `cephonenumber` varchar(10) NOT NULL,
+				  `cephonenumber` varchar(32) NOT NULL,
 				  `ceemail` varchar(64) NOT NULL,
 				  `cecompanyname` varchar(64) NOT NULL,
 				  `cedeliveryinformation` text NOT NULL,
@@ -477,10 +477,6 @@ class Socolissimo extends CarrierModule
 		elseif (!Validate::isInt(Tools::getValue('dypreparationtime')))
 			$this->post_errors[] = $this->l('Invalid preparation time');
 
-		if (Tools::getValue('overcost') == null)
-			$this->post_errors[] = $this->l('Additional cost not specified');
-		elseif (!Validate::isFloat(Tools::getValue('overcost')))
-			$this->post_errors[] = $this->l('Invalid additional cost');
 		if ((int)Tools::getValue('id_socolissimo_allocation') == (int)Tools::getValue('id_socolissimocc_allocation'))
 			$this->post_errors[] = $this->l('Socolissimo carrier cannot be the same as socolissimo CC');
 	}
@@ -613,6 +609,10 @@ class Socolissimo extends CarrierModule
 		// Backward compatibility 1.5
 		$id_carrier = $carrier_so->id;
 
+		// bug fix for cart rule with restriction
+		if (!version_compare(_PS_VERSION_, '1.5', '<'))
+			CartRule::autoAddToCart($this->context);
+			
 		// For now works only with single shipping !
 		if (method_exists($params['cart'], 'carrierIsSelected'))
 			if ($params['cart']->carrierIsSelected((int)$carrier_so->id, $params['address']->id))
@@ -670,6 +670,25 @@ class Socolissimo extends CarrierModule
 						break;
 					}
 				}
+				if(!$free_shipping)
+				{
+				$key_search = $id_carrier.',';
+				$deliveries_list = $params['cart']->getDeliveryOptionList();
+				foreach($deliveries_list as $deliveries)
+					foreach($deliveries as $key => $elt)
+						if($key == $key_search)
+							$free_shipping = $elt['is_free'];
+				}
+			}
+			else
+			{
+				// for cart rule with restriction
+				$key_search = $id_carrier.',';
+				$deliveries_list = $params['cart']->getDeliveryOptionList();
+				foreach($deliveries_list as $deliveries)
+					foreach($deliveries as $key => $elt)
+						if($key == $key_search)
+							$free_shipping = $elt['is_free'];
 			}
 		}
 		if ($free_shipping)
@@ -751,7 +770,7 @@ class Socolissimo extends CarrierModule
 			'SOBWD_C' => (version_compare(_PS_VERSION_, '1.5', '<')) ? false : true, // Backward compatibility for js process in tpl
 			'inputs' => $inputs,
 			'initialCost_label' => $this->l('From'),
-			'initialCost' => $from_cost.' €', // to change label for price in tpl
+			'initialCost' => $from_cost.$this->l(' €'), // to change label for price in tpl
 			'taxMention' => $this->l(' TTC'), // to change label for price in tpl
 			'finishProcess' => $this->l('To choose SoColissimo, click on a delivery method'),
 			'rewrite_active' => $rewrite_active,
@@ -1570,7 +1589,7 @@ class Socolissimo extends CarrierModule
 		if (version_compare(_PS_VERSION_, '1.5', '<'))
 		{
 			if (Configuration::get('SOCOLISSIMO_VERSION') != $this->version)
-				foreach (array('2.8.0', '2.8.4', '2.8.5','2.9.20','2.9.21') as $version)
+				foreach (array('2.8.0', '2.8.4', '2.8.5','2.9.20','2.9.21','2.9.22') as $version)
 				{
 					$file = dirname(__FILE__).'/upgrade/install-'.$version.'.php';
 					if (Configuration::get('SOCOLISSIMO_VERSION') < $version && file_exists($file))

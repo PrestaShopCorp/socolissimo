@@ -1,4 +1,5 @@
-{*
+<?php
+/**
 * 2007-2014 PrestaShop
 *
 * NOTICE OF LICENSE
@@ -21,30 +22,15 @@
 *  @copyright 2007-2014 PrestaShop SA
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
-*}
-<script type="text/javascript">
-	var soBwdCompat = "{$SOBWD_C|escape:'htmlall'}";
-	{literal}
-		$(document).ready(function() {
-		{/literal}
-		
-		{foreach from=$ids item=id}
-			{literal}
-				if(soBwdCompat) {
-					$('.delivery_option').each(function( ) {
-						if ($(this).children().children('.delivery_option_radio').val() == '{/literal}{$id}{literal},') {
-							$(this).remove();
-						}
-						if ($(this).find('input.delivery_option_radio').val() == '{/literal}{$id}{literal},') {
-						$(this).remove();
-						}
-					});
-				}
-				else
-					$('#id_carrier{/literal}{$id}{literal}').parent().parent().parent().remove();
-			{/literal}
-		{/foreach}
-		{literal}
-	});
-{/literal}
-</script>
+*/
+
+if (!defined('_PS_VERSION_'))
+	exit;
+
+function upgrade_module_2_9_22($object, $install = false)
+{	
+	$query = 'ALTER TABLE '._DB_PREFIX_.'socolissimo_delivery_info CHANGE `cephonenumber` `cephonenumber` VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL';
+	Db::getInstance()->Execute($query);
+	Configuration::updateValue('SOCOLISSIMO_VERSION', '2.9.22');
+	return true;
+}

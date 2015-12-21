@@ -1,6 +1,6 @@
 <?php
 /**
- * 2007-2015 PrestaShop
+ * 2007-2016 PrestaShop
  *
  * NOTICE OF LICENSE
  *
@@ -19,7 +19,7 @@
  * needs please refer to http://www.prestashop.com for more information.
  *
  *  @author    PrestaShop SA <contact@prestashop.com> Quadra Informatique <modules@quadra-informatique.fr>
- *  @copyright 2007-2015 PrestaShop SA
+ *  @copyright 2007-2016 PrestaShop SA
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
  */
@@ -232,7 +232,7 @@ function saveOrderShippingDetails($id_cart, $id_customer, $so_params, $so_object
 		{
 			isset($so_params['PRID']) ? $values['prid'] = pSQL($so_params['PRID']) : '';
 			isset($so_params['PRNAME']) ? $values['prname'] = Tools::ucfirst(pSQL($so_params['PRNAME'])) : '';
-			isset($delivery_mode[$so_params['DELIVERYMODE']]) ? $values['prfirstname'] = pSQL($delivery_mode[$so_params['DELIVERYMODE']]) : $values['prfirstname'] = 'So Colissimo';
+			isset($delivery_mode[$so_params['DELIVERYMODE']]) ? $values['prfirstname'] = pSQL($delivery_mode[$so_params['DELIVERYMODE']]) : $values['prfirstname'] = 'Colissimo';
 			isset($so_params['PRCOMPLADRESS']) ? $values['prcompladress'] = pSQL($so_params['PRCOMPLADRESS']) : '';
 			isset($so_params['PRADRESS1']) ? $values['pradress1'] = pSQL($so_params['PRADRESS1']) : '';
 			isset($so_params['PRADRESS2']) ? $values['pradress2'] = pSQL($so_params['PRADRESS2']) : '';

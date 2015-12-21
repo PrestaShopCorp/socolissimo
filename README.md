@@ -13,7 +13,7 @@ PrestaShop modules are open-source extensions to the PrestaShop e-commerce solut
 
 Contributors **must** follow the following rules:
 
-* This repository is mostly used for technical stuff for Prestashop Addons publication. **Please make your Pull requests on the [dedicated repository][1]** 
+* **This repository is used for technical stuff for Prestashop Addons publication only. Please make your Pull requests on the [dedicated repository][1]** 
 * Do not update the module version number.
 * Follow [the coding standards][2].
 

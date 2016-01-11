@@ -1,5 +1,5 @@
 {*
-* 2007-2014 PrestaShop
+* 2007-2016 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author    PrestaShop SA <contact@prestashop.com> Quadra Informatique <modules@quadra-informatique.fr>
-*  @copyright 2007-2014 PrestaShop SA
+*  @copyright 2007-2016 PrestaShop SA
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -34,9 +34,9 @@
 				{foreach from=$inputs key=key item=val}
 					<input type="hidden" name="{$key|escape:'htmlall':'UTF-8'}" value="{$val|escape:'htmlall':'UTF-8'}"/>
 				{/foreach}
-				<img src="logo.gif" />
+				<img src="{$logo|escape:'htmlall':'UTF-8'}" />
 				<p>{l s='You will be redirect to socolissimo in few moment. If it is not the case, please click button.' mod='socolissimo'}</p>
-				<p><img src="img/ajax-loader.gif" /></p>
+				<p><img src="{$loader|escape:'htmlall':'UTF-8'}" /></p>
 				<input type="submit" value="Envoyer" />
 			</form>
 		</div>

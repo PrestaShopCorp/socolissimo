@@ -1,5 +1,5 @@
 {*
-* 2007-2014 PrestaShop
+* 2007-2016 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author    PrestaShop SA <contact@prestashop.com> Quadra Informatique <modules@quadra-informatique.fr>
-*  @copyright 2007-2014 PrestaShop SA
+*  @copyright 2007-2016 PrestaShop SA
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -49,97 +49,102 @@
 {/if}
 
 <script type="text/javascript">
+	var link_socolissimo = "{$link_socolissimo|escape:'UTF-8'}";
 	var soInputs = new Object();
 	var soBwdCompat = "{$SOBWD_C|escape:'htmlall'}";
 	var soCarrierId = "{$id_carrier|escape:'htmlall'}";
-    var soSellerId = "{$id_carrier_seller|escape:'htmlall'}";
+	var soSellerId = "{$id_carrier_seller|escape:'htmlall'}";
 	var soToken = "{$token|escape:'htmlall'}";
 	var initialCost_label = "{$initialCost_label|escape:'htmlall'}";
 	var initialCost = "{$initialCost|escape:'htmlall'}";
 	var taxMention = "{$taxMention|escape:'htmlall'}";
 	var baseDir = '{$content_dir|escape:'htmlall'}';
+	var rewriteActive = '{$rewrite_active|escape:'htmlall'}';
 
-		{foreach from=$inputs item=input key=name name=myLoop}
-			soInputs.{$name} = "{$input|strip_tags|addslashes}";
-		{/foreach}
+	{foreach from=$inputs item=input key=name name=myLoop}
+	soInputs.{$name} = "{$input|strip_tags|addslashes}";
+	{/foreach}
 
-		{literal}
+	{literal}
 		$('#soLink').fancybox({
-				'width'				: 590,
-				'height'			: 810,
-				'autoScale'	 		: true,
-				'centerOnScroll'	: true,
-				'autoDimensions'	: false,
-				'transitionIn'		: 'none',
-				'transitionOut'		: 'none',
-				'hideOnOverlayClick': false,
-				'hideOnContentClick': false,
-				'showCloseButton'	: true,
-				'showIframeLoading' : true,
-				'enableEscapeButton': true,
-				'type'				: 'iframe',
-				onStart : function() {
-					$('#soLink').attr('href', baseDir+'modules/socolissimo/redirect.php' + serialiseInput(soInputs))
-				},
-				onClosed : function() {
-					$.ajax({
-						type: 'GET',
-						url: baseDir+'/modules/socolissimo/ajax.php',
-						async: false,
-						cache: false,
-						dataType : "json",
-						data: "token=" + soToken,
-						success: function(jsonData) {
-							if (jsonData && jsonData.answer && typeof jsonData.answer != undefined && !opc) {
-								if (jsonData.answer)
-									$('#form').submit();
-								else if (jsonData.msg.length)
-									alert(jsonData.msg);
-							}
-						},
-						error: function(XMLHttpRequest, textStatus, errorThrown) {
-							alert('TECHNICAL ERROR\nDetails:\nError thrown: ' + XMLHttpRequest + '\n' + 'Text status: ' + textStatus);
+			'width': 590,
+			'height': 810,
+			'autoScale': true,
+			'centerOnScroll': true,
+			'autoDimensions': false,
+			'transitionIn': 'none',
+			'transitionOut': 'none',
+			'hideOnOverlayClick': false,
+			'hideOnContentClick': false,
+			'showCloseButton': true,
+			'showIframeLoading': true,
+			'enableEscapeButton': true,
+			'type': 'iframe',
+			onStart: function () {
+				if (soBwdCompat)
+					$('#soLink').attr('href', link_socolissimo + serialiseInput(soInputs));
+				else
+					$('#soLink').attr('href', baseDir + 'modules/socolissimo/redirect.php' + serialiseInput(soInputs));
+			},
+			onClosed: function () {
+				$.ajax({
+					type: 'GET',
+					url: baseDir + '/modules/socolissimo/ajax.php',
+					async: false,
+					cache: false,
+					dataType: "json",
+					data: "token=" + soToken,
+					success: function (jsonData) {
+						if (jsonData && jsonData.answer && typeof jsonData.answer != undefined && !opc) {
+							if (jsonData.answer)
+								$('#form').submit();
+							else if (jsonData.msg.length)
+								alert(jsonData.msg);
 						}
-					});
-				}
-			});
+					},
+					error: function (XMLHttpRequest, textStatus, errorThrown) {
+						alert('TECHNICAL ERROR\nDetails:\nError thrown: ' + XMLHttpRequest + '\n' + 'Text status: ' + textStatus);
+					}
+				});
+			}
+		});
 
-			$(document).ready(function()
+		$(document).ready(function ()
+		{
+			var interval;
+			$('#soLink').attr('href', baseDir + 'modules/socolissimo/redirect.php' + serialiseInput(soInputs));
+			// 1.4 way
+			if (!soBwdCompat)
 			{
-				var interval;
-                        $('#soLink').attr('href', baseDir+'modules/socolissimo/redirect.php' + serialiseInput(soInputs));
-				// 1.4 way
-				if (!soBwdCompat)
-				{
-					$($('#carrierTable input#id_carrier'+soCarrierId).parent().parent()).find('.carrier_price .price').html(initialCost_label+'<br/>'+initialCost);
-					$($('#carrierTable input#id_carrier'+soCarrierId).parent().parent()).find('.carrier_price').css('white-space','nowrap');
-					$('input[name=id_carrier]').change(function() {
-						so_click();
-					});
+				$($('#carrierTable input#id_carrier' + soCarrierId).parent().parent()).find('.carrier_price .price').html(initialCost_label + '<br/>' + initialCost);
+				$($('#carrierTable input#id_carrier' + soCarrierId).parent().parent()).find('.carrier_price').css('white-space', 'nowrap');
+				$('input[name=id_carrier]').change(function () {
 					so_click();
-				}
-				// 1.5 way
-				else {
-					$('input.delivery_option_radio').each(function()
-					{
-						if($(this).val() == soCarrierId+','){
-							$(this).next().children().children().find('div.delivery_option_price').html(initialCost_label+'<br/>'+initialCost+taxMention);
-							// 1.6 themes
-							if($(this).next().children('div.delivery_option_price').length == 0)
-								$(this).parents('tr').children('td.delivery_option_price').find('div.delivery_option_price').html(initialCost_label+'<br/>'+initialCost+taxMention);
-							}
-					});
-					if (soCarrierId)
-						so_click();
-				}
-			$('.delivery_option').each(function( ) {
+				});
+				so_click();
+			}
+			// 1.5 way
+			else {
+				$('input.delivery_option_radio').each(function ()
+				{
+					if ($(this).val() == soCarrierId + ',') {
+						$(this).next().children().children().find('div.delivery_option_price').html(initialCost_label + '<br/>' + initialCost + taxMention);
+						// 1.6 themes
+						if ($(this).next().children('div.delivery_option_price').length == 0)
+							$(this).parents('tr').children('td.delivery_option_price').find('div.delivery_option_price').html(initialCost_label + '<br/>' + initialCost + taxMention);
+					}
+				});
+				if (soCarrierId)
+					so_click();
+			}
+			$('.delivery_option').each(function ( ) {
 				if ($(this).children('.delivery_option_radio').val() == '{/literal}{$id_carrier_seller}{literal},') {
 					$(this).remove();
 				}
 			});
 			$('#id_carrier{/literal}{$id_carrier_seller}{literal}').parent().parent().remove();
 
-			});
+		});
 
 
 		function so_click()
@@ -149,16 +154,19 @@
 					modifyCarrierLine();
 			}
 			else if ((!soBwdCompat && $('#id_carrier' + soCarrierId).is(':not(:checked)')) ||
-				(soBwdCompat && soCarrierId == 0)) {
+					(soBwdCompat && soCarrierId == 0)) {
 				$('[name=processCarrier]').unbind('click').live('click', function () {
 					return true;
 				});
 			} else {
 				$('[name=processCarrier]').unbind('click').live('click', function () {
-					if (($('#id_carrier' + soCarrierId).is(':checked')) || ($('.delivery_option_radio:checked').val() == soCarrierId+','))
+					if (($('#id_carrier' + soCarrierId).is(':checked')) || ($('.delivery_option_radio:checked').val() == soCarrierId + ','))
 					{
-						if (acceptCGV()){
-							$('#soLink').attr('href', baseDir+'modules/socolissimo/redirect.php' + serialiseInput(soInputs));
+						if (acceptCGV()) {
+							if (soBwdCompat)
+								$('#soLink').attr('href', link_socolissimo + serialiseInput(soInputs));
+							else
+								$('#soLink').attr('href', baseDir + 'modules/socolissimo/redirect.php' + serialiseInput(soInputs));
 							$("#soLink").trigger("click");
 						}
 						return false;
@@ -168,51 +176,58 @@
 			}
 		}
 
-	function modifyCarrierLine()
-	{
-		if(soBwdCompat)
-			var carrier = $('input.delivery_option_radio:checked');
-
-		else {
-			var carrier = $('input[name=id_carrier]:checked');
-				var container = '#id_carrier' + soCarrierId;
-		}
-
-		if ((carrier.val() == soCarrierId) || (carrier.val() == soCarrierId+',')) {
-			if(soBwdCompat){
-				carrier.next().children().children().find('div.delivery_option_delay').append('<div><a class="exclusive_large" id="button_socolissimo" href="#" onclick="redirect();return;" >{/literal}{$select_label}{literal}</a></div>');
-				// 1.6 theme
-				carrier.parent().parent().parent().parent().find('td.delivery_option_price').before('<div><a class="exclusive_large" id="button_socolissimo" href="#" onclick="redirect();return;" >{/literal}{$select_label}{literal}</a></div>');
-				}
-			else
-				$(container).parent().siblings('.carrier_infos').append('<a class="exclusive_large" id="button_socolissimo" href="#" onclick="redirect();return;" >{/literal}{$select_label}{literal}</a>');
-		} else {
-			$('#button_socolissimo').remove();
-		}
-		if (already_select_delivery)
+		function modifyCarrierLine()
 		{
-			$(container).css('display', 'block');
-			$(container).css('margin', 'auto');
-			$(container).css('margin-top', '5px');
-		} else
-			if(soBwdCompat)
+			if (soBwdCompat)
+				var carrier = $('input.delivery_option_radio:checked');
+
+			else {
+				var carrier = $('input[name=id_carrier]:checked');
+				var container = '#id_carrier' + soCarrierId;
+			}
+
+			if ((carrier.val() == soCarrierId) || (carrier.val() == soCarrierId + ',')) {
+				if (soBwdCompat) {
+					carrier.next().children().children().find('div.delivery_option_delay').append('<div><a class="exclusive_large" id="button_socolissimo" href="#" onclick="redirect();return;" >{/literal}{$select_label}{literal}</a></div>');
+					// 1.6 theme
+					carrier.parent().parent().parent().parent().find('td.delivery_option_price').before('<td><div><a class="exclusive_large" id="button_socolissimo" href="#" onclick="redirect();return;" style="text-align:center;" >{/literal}{$select_label}{literal}</a></div></td>');
+				}
+				else
+					$(container).parent().siblings('.carrier_infos').append('<a class="exclusive_large" id="button_socolissimo" href="#" onclick="redirect();return;" >{/literal}{$select_label}{literal}</a>');
+			} else {
+				$('#button_socolissimo').remove();
+			}
+			if (already_select_delivery)
+			{
+				$(container).css('display', 'block');
+				$(container).css('margin', 'auto');
+				$(container).css('margin-top', '5px');
+			} else
+			if (soBwdCompat)
 				$(container).css('display', 'none');
-	}
+		}
 
-	function redirect()
-	{
-		$('#soLink').attr('href',  baseDir+'modules/socolissimo/redirect.php' + serialiseInput(soInputs));
-		$("#soLink").trigger("click");
-		return false;
-	}
+		function redirect()
+		{
+			if (soBwdCompat)
+				$('#soLink').attr('href', link_socolissimo + serialiseInput(soInputs));
+			else
+				$('#soLink').attr('href', baseDir + 'modules/socolissimo/redirect.php' + serialiseInput(soInputs));
+			$("#soLink").trigger("click");
+			return false;
+		}
 
-	function serialiseInput(inputs)
-	{
-		var str = '?first_call=1&';
-		for ( var cle in inputs )
-			str += cle + '=' + inputs[cle] + '&';
-		return (str + 'gift=' + $('#gift').attr('checked') + '&gift_message='+ $('#gift_message').attr('value'));
-	}
+		function serialiseInput(inputs)
+		{
+			if (soBwdCompat && !rewriteActive)
+				var str = '&first_call=1&';
+			else
+				var str = '?first_call=1&';
+		
+			for (var cle in inputs)
+				str += cle + '=' + inputs[cle] + '&';
+			return (str + 'gift=' + $('#gift').attr('checked') + '&gift_message=' + $('#gift_message').attr('value'));
+		}
 
 	{/literal}
 </script>

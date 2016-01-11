@@ -1,6 +1,6 @@
 <?php
 /**
-* 2007-2014 PrestaShop
+* 2007-2016 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author    PrestaShop SA <contact@prestashop.com> Quadra Informatique <modules@quadra-informatique.fr>
-*  @copyright 2007-2014 PrestaShop SA
+*  @copyright 2007-2016 PrestaShop SA
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -37,12 +37,12 @@ $fields = $so->getFields();
 $inputs = array();
 foreach ($_GET as $key => $value)
 	if (in_array($key, $fields))
-		$inputs[$key] = Tools::getValue($key);
+		$inputs[$key] = trim(Tools::getValue($key));
 
 /* for belgium number specific format */
-if (Tools::getIsset(Tools::getValue('cePays')) && Tools::getValue('cePays') == 'BE')
+if (Tools::getValue('cePays') == 'BE')
 	if (isset($inputs['cePhoneNumber']) && strpos($inputs['cePhoneNumber'], '324') === 0)
-		$inputs['cePhoneNumber'] = '+324'.Tools::substr($inputs['cePhoneNumber'], 2);
+		$inputs['cePhoneNumber'] = '+324'.Tools::substr($inputs['cePhoneNumber'], 3);
 
 $param_plus = array(
 	/* Get the data set before */
@@ -55,10 +55,15 @@ $inputs['trParamPlus'] = implode('|', $param_plus);
 /* Add signature to get the gift and gift message in the trParamPlus */
 $inputs['signature'] = $so->generateKey($inputs);
 
-$socolissimo_url = Configuration::get('SOCOLISSIMO_URL');
+$protocol = 'http://';
+if (Configuration::get('PS_SSL_ENABLED'))
+	$protocol = 'https://';
+$socolissimo_url = $protocol.Configuration::get('SOCOLISSIMO_URL');
 Context::getContext()->smarty->assign(array(
 	'inputs' => $inputs,
-	'socolissimo_url' => $socolissimo_url
+	'socolissimo_url' => $socolissimo_url,
+	'logo' => 'logo.gif',
+	'loader' => 'ajax-loader.gif'
 ));
 
 Context::getContext()->smarty->display(_PS_MODULE_DIR_.'socolissimo/views/templates/front/redirect.tpl');

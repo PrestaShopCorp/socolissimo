@@ -24,34 +24,13 @@
 *  International Registered Trademark & Property of PrestaShop SA
 */
 
-include_once('../../config/config.inc.php');
-include_once('../../init.php');
-include_once('../../modules/socolissimo/socolissimo.php');
+if (!defined('_PS_VERSION_'))
+	exit;
 
-/* To have context available and translation */
-$socolissimo = new Socolissimo();
-
-/* Default answer values => key */
-$result = array(
-	'answer' => true,
-	'msg' => ''
-);
-
-/* Check Token */
-
-if (Tools::getValue('token') != sha1('socolissimo'._COOKIE_KEY_.Context::getContext()->cart->id))
-{
-	$result['answer'] = false;
-	$result['msg'] = $socolissimo->l('Invalid token');
+function upgrade_module_2_9_22($object, $install = false)
+{	
+	$query = 'ALTER TABLE '._DB_PREFIX_.'socolissimo_delivery_info CHANGE `cephonenumber` `cephonenumber` VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL';
+	Db::getInstance()->Execute($query);
+	Configuration::updateValue('SOCOLISSIMO_VERSION', '2.9.22');
+	return true;
 }
-
-/* If no problem with token but no delivery available */
-if ($result['answer'] && !($result = $socolissimo->getDeliveryInfos(Context::getContext()->cart->id, Context::getContext()->customer->id)))
-{
-	$result['answer'] = false;
-	$result['msg'] = $socolissimo->l('No delivery information selected');
-}
-
-header('Content-type: application/json');
-echo Tools::jsonEncode($result);
-exit(0);

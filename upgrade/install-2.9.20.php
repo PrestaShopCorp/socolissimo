@@ -27,50 +27,48 @@
 if (!defined('_PS_VERSION_'))
 	exit;
 
-function upgrade_module_2_8_5($object, $install = false)
-{
-	// update value so url mobile
-	Configuration::updateValue('SOCOLISSIMO_COST_SELLER', false);
-	// add column codereseau, cename, cefirstname in table socolissimo_delivery_info, checking exitence first (2.8.5 update)
+function upgrade_module_2_9_20($object, $install = false)
+{	
+	// add column lotacheminement, versionplantri, distributionsort in table socolissimo_delivery_info, checking exitence first (2.9.19 update)
 	$query = 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS
-			  WHERE COLUMN_NAME= "codereseau"
+			  WHERE COLUMN_NAME= "lotacheminement"
 			  AND TABLE_NAME=  "'._DB_PREFIX_.'socolissimo_delivery_info"
 			  AND TABLE_SCHEMA = "'._DB_NAME_.'"';
 
 	$result = Db::getInstance()->ExecuteS($query);
 
-	// adding column codereseau
+	// adding column lotacheminement
 	if (!$result)
 	{
-		$query = 'ALTER TABLE '._DB_PREFIX_.'socolissimo_delivery_info add  `codereseau` varchar(3)';
+		$query = 'ALTER TABLE '._DB_PREFIX_.'socolissimo_delivery_info add  `lotacheminement` varchar(64) NOT NULL';
 		Db::getInstance()->Execute($query);
 	}
 	$query = 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS
-			  WHERE COLUMN_NAME= "cename"
+			  WHERE COLUMN_NAME= "distributionsort"
 			  AND TABLE_NAME=  "'._DB_PREFIX_.'socolissimo_delivery_info"
 			  AND TABLE_SCHEMA = "'._DB_NAME_.'"';
 
 	$result = Db::getInstance()->ExecuteS($query);
 
-	// adding column cename
+	// adding column distributionsort
 	if (!$result)
 	{
-		$query = 'ALTER TABLE '._DB_PREFIX_.'socolissimo_delivery_info add  `cename` varchar(64)';
+		$query = 'ALTER TABLE '._DB_PREFIX_.'socolissimo_delivery_info add  `distributionsort` varchar(64) NOT NULL';
 		Db::getInstance()->Execute($query);
 	}
 	$query = 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS
-			  WHERE COLUMN_NAME= "cefirstname"
+			  WHERE COLUMN_NAME= "versionplantri"
 			  AND TABLE_NAME=  "'._DB_PREFIX_.'socolissimo_delivery_info"
 			  AND TABLE_SCHEMA = "'._DB_NAME_.'"';
 
 	$result = Db::getInstance()->ExecuteS($query);
 
-	// adding column cefirstname
+	// adding column versionplantri
 	if (!$result)
 	{
-		$query = 'ALTER TABLE '._DB_PREFIX_.'socolissimo_delivery_info add  `cefirstname` varchar(64)';
+		$query = 'ALTER TABLE '._DB_PREFIX_.'socolissimo_delivery_info add  `versionplantri` varchar(10) NOT NULL';
 		Db::getInstance()->Execute($query);
 	}
-	Configuration::updateValue('SOCOLISSIMO_VERSION', '2.8.5');
+	Configuration::updateValue('SOCOLISSIMO_VERSION', '2.9.20');
 	return true;
 }

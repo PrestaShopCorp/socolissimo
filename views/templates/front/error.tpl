@@ -1,5 +1,5 @@
 {*
-* 2007-2014 PrestaShop
+* 2007-2016 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,7 +18,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author    PrestaShop SA <contact@prestashop.com> Quadra Informatique <modules@quadra-informatique.fr>
-*  @copyright 2007-2014 PrestaShop SA
+*  @copyright 2007-2016 PrestaShop SA
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
@@ -33,5 +33,5 @@
 	</div>
 {/if}
 {if isset($so_url_back)}
-	<a href="{$so_url_back|escape:'htmlall'}step=2&cgv=1" class="button_small" title="{l s='Back' mod='socolissimo'}">Back</a>
+	<a href="{$so_url_back|escape:'htmlall'}step=2&cgv=1" class="button_small" title="{l s='Back' mod='socolissimo'}">{l s='Back' mod='socolissimo'}</a>
 {/if}

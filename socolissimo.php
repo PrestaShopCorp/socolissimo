@@ -1,6 +1,6 @@
 <?php
 /**
- * 2007-2014 PrestaShop
+ * 2007-2016 PrestaShop
  *
  * NOTICE OF LICENSE
  *
@@ -19,7 +19,7 @@
  * needs please refer to http://www.prestashop.com for more information.
  *
  *  @author    PrestaShop SA <contact@prestashop.com> Quadra Informatique <modules@quadra-informatique.fr>
- *  @copyright 2007-2014 PrestaShop SA
+ *  @copyright 2007-2016 PrestaShop SA
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
  */
@@ -34,7 +34,7 @@ class Socolissimo extends CarrierModule
 	private $post_errors = array();
 	private $api_num_version = '4.0';
 	private $config = array(
-		'name' => 'La Poste - So Colissimo',
+		'name' => 'La Poste - Colissimo Simplicité',
 		'id_tax_rules_group' => 0,
 		'url' => 'http://www.colissimo.fr/portail_colissimo/suivreResultat.do?parcelnumber=@',
 		'active' => true,
@@ -64,15 +64,15 @@ class Socolissimo extends CarrierModule
 	{
 		$this->name = 'socolissimo';
 		$this->tab = 'shipping_logistics';
-		$this->version = '2.9.17';
+		$this->version = '2.9.23';
 		$this->author = 'Quadra Informatique';
-		$this->limited_countries = array('fr');
+		$this->limited_countries = array('fr','be');
 		$this->module_key = 'faa857ecf7579947c8eee2d9b3d1fb04';
 
 		parent::__construct();
 
 		$this->page = basename(__FILE__, '.php');
-		$this->displayName = $this->l('So Colissimo');
+		$this->displayName = $this->l('Colissimo Simplicité');
 		$this->description = $this->l('Offer your customer 5 different delivery methods with LaPoste.');
 		$protocol = function_exists('Tools::getProtocol') ? Tools::getProtocol() : 'http://';
 		if (Configuration::get('PS_SSL_ENABLED') && Configuration::get('PS_SSL_ENABLED_EVERYWHERE'))
@@ -82,8 +82,9 @@ class Socolissimo extends CarrierModule
 		/** Backward compatibility */
 		require(_PS_MODULE_DIR_.$this->name.'/backward_compatibility/backward.php');
 
-		if ((Configuration::get('SOCOLISSIMO_VERSION') != $this->version) && Configuration::get('SOCOLISSIMO_VERSION'))
-			$this->runUpgrades(true);
+		if (version_compare(_PS_VERSION_, '1.5', '<'))
+			if ((Configuration::get('SOCOLISSIMO_VERSION') != $this->version) && Configuration::get('SOCOLISSIMO_VERSION'))
+				$this->runUpgrades(true);
 		if (self::isInstalled($this->name))
 		{
 			$warning = array();
@@ -128,14 +129,13 @@ class Socolissimo extends CarrierModule
 	public function install()
 	{
 		if (!parent::install() || !Configuration::updateValue('SOCOLISSIMO_ID', null) || !Configuration::updateValue('SOCOLISSIMO_KEY', null)
-				|| !Configuration::updateValue('SOCOLISSIMO_VERSION', $this->version)
-				|| !Configuration::updateValue('SOCOLISSIMO_URL', 'http://ws.colissimo.fr/pudo-fo-frame/storeCall.do')
-				|| !Configuration::updateValue('SOCOLISSIMO_URL_MOBILE', 'http://ws-mobile.colissimo.fr/')
+				|| !Configuration::updateValue('SOCOLISSIMO_URL', 'ws.colissimo.fr/pudo-fo-frame/storeCall.do')
+				|| !Configuration::updateValue('SOCOLISSIMO_URL_MOBILE', 'ws-mobile.colissimo.fr/')
 				|| !Configuration::updateValue('SOCOLISSIMO_PREPARATION_TIME', 1)
 				|| !Configuration::updateValue('SOCOLISSIMO_EXP_BEL', true)
 				|| !Configuration::updateValue('SOCOLISSIMO_COST_SELLER', false)
 				|| !Configuration::updateValue('SOCOLISSIMO_OVERCOST', 3.6)
-				|| !Configuration::updateValue('SOCOLISSIMO_SUP_URL', 'http://ws.colissimo.fr/supervision-pudo-frame/supervision.jsp')
+				|| !Configuration::updateValue('SOCOLISSIMO_SUP_URL', 'ws.colissimo.fr/supervision-pudo-frame/supervision.jsp')
 				|| !Configuration::updateValue('SOCOLISSIMO_SUP_BELG', true)
 				|| !Configuration::updateValue('SOCOLISSIMO_SUP', true)
 				|| !Configuration::updateValue('SOCOLISSIMO_USE_FANCYBOX', false)
@@ -164,7 +164,7 @@ class Socolissimo extends CarrierModule
 				  `przipcode` text(10) NOT NULL,
 				  `prtown` varchar(64) NOT NULL,
 				  `cecountry` varchar(10) NOT NULL,
-				  `cephonenumber` varchar(10) NOT NULL,
+				  `cephonenumber` varchar(32) NOT NULL,
 				  `ceemail` varchar(64) NOT NULL,
 				  `cecompanyname` varchar(64) NOT NULL,
 				  `cedeliveryinformation` text NOT NULL,
@@ -173,12 +173,20 @@ class Socolissimo extends CarrierModule
                                `codereseau` varchar(3) NOT NULL,
                                `cename` varchar(64) NOT NULL,
 				  `cefirstname` varchar(64) NOT NULL,
+				  `lotacheminement` varchar(64) NOT NULL,
+				  `distributionsort` varchar(64) NOT NULL,
+				  `versionplantri` text(10) NOT NULL,
 				  PRIMARY KEY  (`id_cart`,`id_customer`)
 				) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;';
 
 		if (!Db::getInstance()->execute($sql))
 			return false;
 
+		if (!version_compare(_PS_VERSION_, '1.5', '<'))
+			if (Shop::isFeatureActive())
+				Shop::setContext(Shop::CONTEXT_ALL);
+		if(!Configuration::updateValue('SOCOLISSIMO_VERSION', $this->version))
+			return false;
 		// Add carrier in back office
 		if (!$this->createSoColissimoCarrier($this->config))
 			return false;
@@ -280,7 +288,7 @@ class Socolissimo extends CarrierModule
 
 	public function getContent()
 	{
-		$this->_html .= '<h2>'.$this->l('So Colissimo').' Version '.Configuration::get('SOCOLISSIMO_VERSION').'</h2>';
+		$this->_html .= '<h2>'.$this->l('Colissimo Simplicité').' Version '.Configuration::get('SOCOLISSIMO_VERSION').'</h2>';
 
 		if (!empty($_POST) && (Tools::isSubmit('submitPersonalSave') || Tools::isSubmit('submitPersonalCancel')))
 			$validation = $this->postPersonalProcess();
@@ -469,10 +477,6 @@ class Socolissimo extends CarrierModule
 		elseif (!Validate::isInt(Tools::getValue('dypreparationtime')))
 			$this->post_errors[] = $this->l('Invalid preparation time');
 
-		if (Tools::getValue('overcost') == null)
-			$this->post_errors[] = $this->l('Additional cost not specified');
-		elseif (!Validate::isFloat(Tools::getValue('overcost')))
-			$this->post_errors[] = $this->l('Invalid additional cost');
 		if ((int)Tools::getValue('id_socolissimo_allocation') == (int)Tools::getValue('id_socolissimocc_allocation'))
 			$this->post_errors[] = $this->l('Socolissimo carrier cannot be the same as socolissimo CC');
 	}
@@ -605,6 +609,10 @@ class Socolissimo extends CarrierModule
 		// Backward compatibility 1.5
 		$id_carrier = $carrier_so->id;
 
+		// bug fix for cart rule with restriction
+		if (!version_compare(_PS_VERSION_, '1.5', '<'))
+			CartRule::autoAddToCart($this->context);
+			
 		// For now works only with single shipping !
 		if (method_exists($params['cart'], 'carrierIsSelected'))
 			if ($params['cart']->carrierIsSelected((int)$carrier_so->id, $params['address']->id))
@@ -662,6 +670,25 @@ class Socolissimo extends CarrierModule
 						break;
 					}
 				}
+				if(!$free_shipping)
+				{
+				$key_search = $id_carrier.',';
+				$deliveries_list = $params['cart']->getDeliveryOptionList();
+				foreach($deliveries_list as $deliveries)
+					foreach($deliveries as $key => $elt)
+						if($key == $key_search)
+							$free_shipping = $elt['is_free'];
+				}
+			}
+			else
+			{
+				// for cart rule with restriction
+				$key_search = $id_carrier.',';
+				$deliveries_list = $params['cart']->getDeliveryOptionList();
+				foreach($deliveries_list as $deliveries)
+					foreach($deliveries as $key => $elt)
+						if($key == $key_search)
+							$free_shipping = $elt['is_free'];
 			}
 		}
 		if ($free_shipping)
@@ -713,21 +740,42 @@ class Socolissimo extends CarrierModule
 		if ($seller_cost_with_taxes || (Configuration::get('SOCOLISSIMO_CARRIER_ID_SELLER') && Configuration::get('SOCOLISSIMO_COST_SELLER')))
 			if ((float)str_replace(',', '.', $seller_cost_with_taxes) < (float)str_replace(',', '.', $std_cost_with_taxes))
 				$from_cost = $seller_cost_with_taxes;
-
+		$rewrite_active = true;
+		if(!Configuration::get('PS_REWRITING_SETTINGS'))
+			$rewrite_active = false;
+			
+		// module link for prestashop 1.5 to get proper url
+		$link = new Link();
+		$module_link = '';
+		if (!version_compare(_PS_VERSION_, '1.5', '<'))
+			$module_link = $link->getModuleLink('socolissimo', 'redirect', array(), true);
+			
+		$module_link_mobile = '';
+		if (!version_compare(_PS_VERSION_, '1.5', '<'))
+			$module_link_mobile = $link->getModuleLink('socolissimo', 'redirectmobile', array(), true);
+		
+		// automatic settings api protocol for ssl
+		$protocol = 'http://';
+		if (Configuration::get('PS_SSL_ENABLED'))
+			$protocol = 'https://';
+			
 		$this->context->smarty->assign(array(
 			'select_label' => $this->l('Select delivery mode'),
 			'edit_label' => $this->l('Edit delivery mode'),
 			'token' => sha1('socolissimo'._COOKIE_KEY_.Context::getContext()->cookie->id_cart),
-			'urlSo' => Configuration::get('SOCOLISSIMO_URL').'?trReturnUrlKo='.htmlentities($this->url, ENT_NOQUOTES, 'UTF-8'),
-			'urlSoMobile' => Configuration::get('SOCOLISSIMO_URL_MOBILE').'?trReturnUrlKo='.htmlentities($this->url, ENT_NOQUOTES, 'UTF-8'),
+			'urlSo' => $protocol.Configuration::get('SOCOLISSIMO_URL').'?trReturnUrlKo='.htmlentities($this->url, ENT_NOQUOTES, 'UTF-8'),
+			'urlSoMobile' => $protocol.Configuration::get('SOCOLISSIMO_URL_MOBILE').'?trReturnUrlKo='.htmlentities($this->url, ENT_NOQUOTES, 'UTF-8'),
 			'id_carrier' => $id_carrier,
 			'id_carrier_seller' => Configuration::get('SOCOLISSIMO_CARRIER_ID_SELLER'),
 			'SOBWD_C' => (version_compare(_PS_VERSION_, '1.5', '<')) ? false : true, // Backward compatibility for js process in tpl
 			'inputs' => $inputs,
 			'initialCost_label' => $this->l('From'),
-			'initialCost' => $from_cost.' €', // to change label for price in tpl
+			'initialCost' => $from_cost.$this->l(' €'), // to change label for price in tpl
 			'taxMention' => $this->l(' TTC'), // to change label for price in tpl
-			'finishProcess' => $this->l('To choose SoColissimo, click on a delivery method')
+			'finishProcess' => $this->l('To choose SoColissimo, click on a delivery method'),
+			'rewrite_active' => $rewrite_active,
+			'link_socolissimo' => $module_link,
+			'link_socolissimo_mobile' => $module_link_mobile
 		));
 
 		$ids = array();
@@ -816,7 +864,7 @@ class Socolissimo extends CarrierModule
 				|| in_array((int)$order->id_carrier, explode('|', Configuration::get('SOCOLISSIMO_CARRIER_ID_HIST')))) && !empty($delivery_infos))
 		{
 			$html = '<br><div class="panel"><fieldset style="width:400px;"><legend><img src="'.$this->_path.'logo.gif" alt="" /> ';
-			$html .= $this->l('So Colissimo').'</legend><b>'.$this->l('Delivery mode').' : </b>';
+			$html .= $this->l('Colissimo Simplicité').'</legend><b>'.$this->l('Delivery mode').' : </b>';
 
 			$sc_fields = new SCFields($delivery_infos['delivery_mode']);
 
@@ -875,6 +923,10 @@ class Socolissimo extends CarrierModule
 
 	public function hookUpdateCarrier($params)
 	{
+		if (!version_compare(_PS_VERSION_, '1.5', '<'))
+			if (Shop::isFeatureActive())
+				Shop::setContext(Shop::CONTEXT_ALL);
+			
 		if ((int)$params['id_carrier'] == (int)Configuration::get('SOCOLISSIMO_CARRIER_ID'))
 		{
 			Configuration::updateValue('SOCOLISSIMO_CARRIER_ID', (int)$params['carrier']->id);
@@ -942,6 +994,10 @@ class Socolissimo extends CarrierModule
 
 		if ($carrier->add())
 		{
+			if (!version_compare(_PS_VERSION_, '1.5', '<'))
+				if (Shop::isFeatureActive())
+					Shop::setContext(Shop::CONTEXT_ALL);
+			
 			Configuration::updateValue('SOCOLISSIMO_CARRIER_ID', (int)$carrier->id);
 			$groups = Group::getgroups(true);
 
@@ -997,6 +1053,9 @@ class Socolissimo extends CarrierModule
 
 		if ($carrier->add())
 		{
+			if (!version_compare(_PS_VERSION_, '1.5', '<'))
+				if (Shop::isFeatureActive())
+					Shop::setContext(Shop::CONTEXT_ALL);
 			Configuration::updateValue('SOCOLISSIMO_CARRIER_ID_SELLER', (int)$carrier->id);
 			$groups = Group::getgroups(true);
 
@@ -1063,7 +1122,7 @@ class Socolissimo extends CarrierModule
 			$new_address->postcode = $return['przipcode'];
 			$new_address->city = $return['prtown'];
 			$new_address->id_country = $iso_code;
-			$new_address->alias = 'So Colissimo - '.date('d-m-Y');
+			$new_address->alias = 'Colissimo Simplicité - '.date('d-m-Y');
 			$new_address->phone_mobile = $return['cephonenumber'];
 
 			if (!in_array($return['delivery_mode'], array('DOM', 'RDV')))
@@ -1083,7 +1142,7 @@ class Socolissimo extends CarrierModule
 				$new_address->postcode = $return['przipcode'];
 				$new_address->city = $return['prtown'];
 				$new_address->id_country = $iso_code;
-				$new_address->alias = 'So Colissimo - '.date('d-m-Y');
+				$new_address->alias = 'Colissimo - '.date('d-m-Y');
 				$new_address->add();
 			}
 			return (int)$new_address->id;
@@ -1171,8 +1230,11 @@ class Socolissimo extends CarrierModule
 	{
 		if (Configuration::get('SOCOLISSIMO_SUP'))
 		{
+			$protocol = 'http://';
+			if (Configuration::get('PS_SSL_ENABLED'))
+				$protocol = 'https://';
 			$ctx = @stream_context_create(array('http' => array('timeout' => 1)));
-			$return = @Tools::file_get_contents(Configuration::get('SOCOLISSIMO_SUP_URL'), 0, $ctx);
+			$return = @Tools::file_get_contents($protocol.Configuration::get('SOCOLISSIMO_SUP_URL'), 0, $ctx);
 
 			if (ini_get('allow_url_fopen') == 0)
 				return true;
@@ -1524,23 +1586,26 @@ class Socolissimo extends CarrierModule
 	 */
 	public function runUpgrades($install = false)
 	{
-		if (Configuration::get('SOCOLISSIMO_VERSION') != $this->version)
-			foreach (array('2.8.0', '2.8.4', '2.8.5') as $version)
-			{
-				$file = dirname(__FILE__).'/upgrade/install-'.$version.'.php';
-				if (Configuration::get('SOCOLISSIMO_VERSION') < $version && file_exists($file))
-				{
-					include_once $file;
-					call_user_func('upgrade_module_'.str_replace('.', '_', $version), $this, $install);
-				}
-			}
-		if (!Configuration::get('SOCOLISSIMO_CARRIER_ID_SELLER'))
+		if (version_compare(_PS_VERSION_, '1.5', '<'))
 		{
-			//add carrier for seller cost
-			$this->createSoColissimoCarrierSeller($this->config);
+			if (Configuration::get('SOCOLISSIMO_VERSION') != $this->version)
+				foreach (array('2.8.0', '2.8.4', '2.8.5','2.9.20','2.9.21','2.9.22') as $version)
+				{
+					$file = dirname(__FILE__).'/upgrade/install-'.$version.'.php';
+					if (Configuration::get('SOCOLISSIMO_VERSION') < $version && file_exists($file))
+					{
+						include_once $file;
+						call_user_func('upgrade_module_'.str_replace('.', '_', $version), $this, $install);
+					}
+				}
+			if (!Configuration::get('SOCOLISSIMO_CARRIER_ID_SELLER'))
+			{
+				//add carrier for seller cost
+				$this->createSoColissimoCarrierSeller($this->config);
+				Configuration::updateValue('SOCOLISSIMO_VERSION', $this->version);
+			}
 			Configuration::updateValue('SOCOLISSIMO_VERSION', $this->version);
 		}
-		Configuration::updateValue('SOCOLISSIMO_VERSION', $this->version);
 	}
 
 	public function getCarrierShop($id_shop, $id_socolissimo)

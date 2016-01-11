@@ -24,34 +24,14 @@
 *  International Registered Trademark & Property of PrestaShop SA
 */
 
-include_once('../../config/config.inc.php');
-include_once('../../init.php');
-include_once('../../modules/socolissimo/socolissimo.php');
+if (!defined('_PS_VERSION_'))
+	exit;
 
-/* To have context available and translation */
-$socolissimo = new Socolissimo();
-
-/* Default answer values => key */
-$result = array(
-	'answer' => true,
-	'msg' => ''
-);
-
-/* Check Token */
-
-if (Tools::getValue('token') != sha1('socolissimo'._COOKIE_KEY_.Context::getContext()->cart->id))
-{
-	$result['answer'] = false;
-	$result['msg'] = $socolissimo->l('Invalid token');
+function upgrade_module_2_9_21($object, $install = false)
+{	
+	Configuration::updateValue('SOCOLISSIMO_URL', 'ws.colissimo.fr/pudo-fo-frame/storeCall.do');
+	Configuration::updateValue('SOCOLISSIMO_URL_MOBILE', 'ws-mobile.colissimo.fr/');
+	Configuration::updateValue('SOCOLISSIMO_SUP_URL', 'ws.colissimo.fr/supervision-pudo-frame/supervision.jsp');
+	Configuration::updateValue('SOCOLISSIMO_VERSION', '2.9.21');
+	return true;
 }
-
-/* If no problem with token but no delivery available */
-if ($result['answer'] && !($result = $socolissimo->getDeliveryInfos(Context::getContext()->cart->id, Context::getContext()->customer->id)))
-{
-	$result['answer'] = false;
-	$result['msg'] = $socolissimo->l('No delivery information selected');
-}
-
-header('Content-type: application/json');
-echo Tools::jsonEncode($result);
-exit(0);

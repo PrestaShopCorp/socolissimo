@@ -1,5 +1,5 @@
 {*
-* 2007-2014 PrestaShop
+* 2007-2016 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -18,12 +18,12 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author    PrestaShop SA <contact@prestashop.com> Quadra Informatique <modules@quadra-informatique.fr>
-*  @copyright 2007-2014 PrestaShop SA
+*  @copyright 2007-2016 PrestaShop SA
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 <script type="text/javascript">
-
+	var link_socolissimo = "{$link_socolissimo_mobile|escape:'UTF-8'}";
 	var soInputs = new Object();
 	var soBwdCompat = "{$SOBWD_C|escape:'htmlall'}";
 	var initialCost_label = "{$initialCost_label|escape:'htmlall'}"
@@ -31,39 +31,47 @@
 	var soCarrierId = "{$id_carrier|escape:'htmlall'}";
 	var taxMention = "{$taxMention|escape:'htmlall'}";
 	var baseDir = '{$content_dir|escape:'htmlall'}';
-	
+	var rewriteActive = '{$rewrite_active|escape:'htmlall'}';
+
 	{foreach from=$inputs item=input key=name name=myLoop}
-		soInputs.{$name} = "{$input|strip_tags|addslashes}";
+	soInputs.{$name} = "{$input|strip_tags|addslashes}";
 	{/foreach}
 	{literal}
-	
-	$(document).ready(function() {
-		if (!soBwdCompat)
-			$($('#carrierTable input#id_carrier'+soCarrierId).parent().parent()).find('.carrier_price .price').html(initialCost_label+'<br/>'+initialCost);
-		else {
-			$('input.delivery_option_radio').each(function() {
-				if($(this).val() == soCarrierId+',')
-					$(this).next().children().children().find('div.delivery_option_price').html(initialCost_label+'<br/>'+initialCost+taxMention);
-			});
-		}
-		$( "#form" ).submit(function() {
-			if(!soBwdCompat) {
-				if ($('#id_carrier{/literal}{$id_carrier}{literal}').is(':checked'))
-					$('#form').attr("action", baseDir+'modules/socolissimo/redirect_mobile.php' + serialiseInput(soInputs));
-			} else {
-				if ($("input[name*='delivery_option[']:checked").val().replace(",", "") == soCarrierId)
-					$('#form').attr("action", baseDir+'modules/socolissimo/redirect_mobile.php' + serialiseInput(soInputs));
+
+		$(document).ready(function () {
+			if (!soBwdCompat)
+				$($('#carrierTable input#id_carrier' + soCarrierId).parent().parent()).find('.carrier_price .price').html(initialCost_label + '<br/>' + initialCost);
+			else {
+				$('input.delivery_option_radio').each(function () {
+					if ($(this).val() == soCarrierId + ',') {
+						$(this).next().children().children().find('div.delivery_option_price').html(initialCost_label + '<br/>' + initialCost + taxMention);
+						// 1.6 themes
+						if ($(this).next().children('div.delivery_option_price').length == 0)
+							$(this).parents('tr').children('td.delivery_option_price').find('div.delivery_option_price').html(initialCost_label + '<br/>' + initialCost + taxMention);
+					}
+				});
 			}
+			$("#form").submit(function () {
+				if (!soBwdCompat) {
+					if ($('#id_carrier{/literal}{$id_carrier}{literal}').is(':checked'))
+						$('#form').attr("action", baseDir + 'modules/socolissimo/redirect_mobile.php' + serialiseInput(soInputs));
+				} else {
+					if ($("input[name*='delivery_option[']:checked").val().replace(",", "") == soCarrierId)
+						$('#form').attr('action', link_socolissimo + serialiseInput(soInputs));
+				}
+			});
 		});
-	});
-	
-	function serialiseInput(inputs) {
-		var str = '?first_call=1&';
-		for ( var cle in inputs ) {
-			str += cle + '=' + inputs[cle] + '&';
-                }
-		return (str + 'gift=' + $('#gift').attr('checked') + '&gift_message='+ $('#gift_message').attr('value'));
-	}
+
+		function serialiseInput(inputs) {
+			if (soBwdCompat && !rewriteActive)
+				var str = '&first_call=1&';
+			else
+				var str = '?first_call=1&';
+			for (var cle in inputs)
+				str += cle + '=' + inputs[cle] + '&';
+			return (str + 'gift=' + $('#gift').attr('checked') + '&gift_message=' + $('#gift_message').attr('value'));
+			
+		}
 	{/literal}
 </script>
 

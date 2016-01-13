@@ -1,4 +1,4 @@
-# So Colissimo Simplicité
+# Colissimo Simplicité
 
 ## About
 

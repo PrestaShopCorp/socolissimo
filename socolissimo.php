@@ -64,7 +64,7 @@ class Socolissimo extends CarrierModule
 	{
 		$this->name = 'socolissimo';
 		$this->tab = 'shipping_logistics';
-		$this->version = '2.9.23';
+		$this->version = '2.9.24';
 		$this->author = 'Quadra Informatique';
 		$this->limited_countries = array('fr','be');
 		$this->module_key = 'faa857ecf7579947c8eee2d9b3d1fb04';
@@ -1122,7 +1122,7 @@ class Socolissimo extends CarrierModule
 			$new_address->postcode = $return['przipcode'];
 			$new_address->city = $return['prtown'];
 			$new_address->id_country = $iso_code;
-			$new_address->alias = 'Colissimo Simplicité - '.date('d-m-Y');
+			$new_address->alias = 'Colissimo - '.date('d-m-Y');
 			$new_address->phone_mobile = $return['cephonenumber'];
 
 			if (!in_array($return['delivery_mode'], array('DOM', 'RDV')))

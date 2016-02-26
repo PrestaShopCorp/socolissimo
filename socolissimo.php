@@ -64,7 +64,7 @@ class Socolissimo extends CarrierModule
 	{
 		$this->name = 'socolissimo';
 		$this->tab = 'shipping_logistics';
-		$this->version = '2.9.24';
+		$this->version = '2.9.25';
 		$this->author = 'Quadra Informatique';
 		$this->limited_countries = array('fr','be');
 		$this->module_key = 'faa857ecf7579947c8eee2d9b3d1fb04';
@@ -1117,8 +1117,10 @@ class Socolissimo extends CarrierModule
 				|| str_replace(array(' ', '.', '-', ',', ';', '+', '/', '\\', '+', '(', ')'), '', $ps_address->phone_mobile) != $return['cephonenumber'])
 		{
 			$new_address->id_customer = (int)$id_customer;
-			$new_address->lastname = preg_replace('/\d/', '', Tools::substr($return['prname'], 0, 32));
-			$new_address->firstname = preg_replace('/\d/', '', Tools::substr($return['prfirstname'], 0, 32));
+            $firstname = preg_replace('/\d/', '', Tools::substr($return['prfirstname'], 0, 32));
+            $lastname = preg_replace('/\d/', '', Tools::substr($return['prname'], 0, 32));
+			$new_address->lastname = trim($this->formatName($lastname));
+			$new_address->firstname = trim($this->formatName($firstname));
 			$new_address->postcode = $return['przipcode'];
 			$new_address->city = $return['prtown'];
 			$new_address->id_country = $iso_code;
@@ -1533,6 +1535,7 @@ class Socolissimo extends CarrierModule
 			';', '€', '~', '#', '{', '(', '[', '|', '\\', '^', ')', ']', '=', '}', '$', '¤', '£', '%', 'μ', '*', '§', '!', '°', '²', '"');
 		foreach ($array_unauthorised_api as $key => $value)
 			$str = str_replace($value, '', $str);
+		$str = preg_replace('/\s+/', ' ', $str);
 		return $str;
 	}
 
@@ -1589,7 +1592,7 @@ class Socolissimo extends CarrierModule
 		if (version_compare(_PS_VERSION_, '1.5', '<'))
 		{
 			if (Configuration::get('SOCOLISSIMO_VERSION') != $this->version)
-				foreach (array('2.8.0', '2.8.4', '2.8.5','2.9.20','2.9.21','2.9.22') as $version)
+				foreach (array('2.8.0', '2.8.4', '2.8.5','2.9.20','2.9.21','2.9.22','2.9.24','2.9.25') as $version)
 				{
 					$file = dirname(__FILE__).'/upgrade/install-'.$version.'.php';
 					if (Configuration::get('SOCOLISSIMO_VERSION') < $version && file_exists($file))
@@ -1624,7 +1627,12 @@ class Socolissimo extends CarrierModule
             WHERE c.deleted = 0 AND c.id_carrier <> '.(int)$id_socolissimo);
 		}
 	}
-
+    
+    public function formatName($name)
+    {
+        return preg_replace('/[0-9!<>,;?=+()@#"°{}_$%:]/','', Tools::stripslashes($name));
+    }
+    
 	public function reallocationCarrier($id_socolissimo)
 	{
 		// carrier must be module carrier

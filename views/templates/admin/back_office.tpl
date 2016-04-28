@@ -78,22 +78,6 @@
                     {l s='Must be the same paramter as in your' mod='socolissimo'}&nbsp;
                     <a style="color:red" href="https://www.colissimo.entreprise.laposte.fr" target="_blank" >{l s='Colissimo Box' mod='socolissimo'}</a></span></p>
         </div>
-        <label>{l s='Expedition in belgium' mod='socolissimo'}: </label>
-        <div class="margin-form">
-            <input type="radio" name="exp_bel_active" id="exp_on" value="1" {if isset($exp_bel_activ) && $exp_bel_activ}checked="checked" {/if}'/>
-            <label class="t" for="exp_on"> <img src="../img/admin/enabled.gif" alt="{l s='Enabled' mod='socolissimo'}" title="{l s='Enabled' mod='socolissimo'}" /></label>
-            <input type="radio" name="exp_bel_active" id="exp_off" value="0" {if  isset($exp_bel_activ) && !$exp_bel_activ} checked="checked" {/if}/>
-            <label class="t" for="exp_off"> <img src="../img/admin/disabled.gif" alt="{l s='Disabled' mod='socolissimo'}'" title="{l s='Disabled' mod='socolissimo'}" /></label>
-            <p>{l s='Enable or disable expedition in belgium.' mod='socolissimo'}</p>
-        </div>
-        <label>{l s='Overcost for delivery in Belgium' mod='socolissimo'}: </label>
-        <div class="margin-form">
-            <input type="text" size="5" class="supcostbelg" name="supcostbelg" onkeyup="this.value = this.value.replace(/,/g, '.');" value="{if isset($supcostbelg)}{$supcostbelg}{else}0{/if}" /> HT
-            <input type="text" size="5" name="costbelgttc" class="costbelgttc" value="{if isset($supcostbelgttc)}{$supcostbelgttc|number_format:2:".":""}{else}0{/if}" readonly/> TTC
-            <p>{l s='in addition to the cost of delivery in France' mod='socolissimo'} <br><span style="color:red">
-                    {l s='Must be the same paramter as in your' mod='socolissimo'}&nbsp;
-                    <a style="color:red" href="https://www.colissimo.entreprise.laposte.fr" target="_blank">{l s='Colissimo Box' mod='socolissimo'}</a></span></p>
-        </div>
     </fieldset>
     <div class="clear">&nbsp;</div>
     <fieldset><legend><img src="{$moduleDir}/logo.gif" alt="" />{l s='Return URL' mod='socolissimo'}</legend>

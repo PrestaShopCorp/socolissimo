@@ -1,6 +1,6 @@
 # Colissimo Simplicité
 
-**This repository is a ready only repository used to push stable releases.<br/>
+**This repository is only used to push stable releases.<br/>
 Please make your Pull requests on the [dedicated repository][1]**
 
 ## About
@@ -19,4 +19,4 @@ Contributors **must** follow the following rules:
 * Follow [the coding standards][2].
 
 [1]: https://github.com/quadra-informatique/SoColissimo-Prestashop
-[2]: http://doc.prestashop.com/display/PS16/Coding+Standards'
+[2]: http://doc.prestashop.com/display/PS16/Coding+Standards

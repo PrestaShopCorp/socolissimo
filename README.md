@@ -1,12 +1,6 @@
 # Colissimo Simplicité
 
-**This repository is only used to push stable releases.<br/>
-Please make your Pull requests on the [dedicated repository][1]**
-
-## About
-
-Quadra Informatique is in partnership with La Poste for presenting you Colissimo Simplicité.
-Discover now the new solution delivery La Poste, exclusively dedicated for e-business.
+**Please use the [dedicated repository][1] for this module**
 
 ## Contributing
 
